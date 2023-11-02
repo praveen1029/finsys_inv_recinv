@@ -291,7 +291,7 @@ class invoice(models.Model):
     invoiceno = models.CharField(max_length=100)
     terms = models.CharField(max_length=100, default='')
     invoicedate = models.DateField()
-    duedate = models.CharField(max_length=100)
+    duedate = models.DateField()
     bname = models.CharField(max_length=255, default='')
     placosupply = models.CharField(max_length=100, default='')
 
@@ -303,12 +303,16 @@ class invoice(models.Model):
     grandtotal = models.FloatField(default=0, null=True)
     invoice_orderno = models.CharField(max_length=255, default='', null=True)
 
-    
+    pay_method = models.CharField(max_length=255, default='', null=True)
+    cheque_no = models.CharField(max_length=255, default='', null=True)
+    upi_no = models.CharField(max_length=255, default='', null=True)
+
+    paidoff=models.CharField(null=True,blank=True,max_length=255)
+    balance=models.CharField(null=True,blank=True,max_length=255)
+
     invoice_status = (
         ('Draft','Draft'),
-        
         ('Invoiced','Invoiced'),
-
     )
     
     status =models.CharField(max_length=150,default='Draft')
@@ -321,10 +325,9 @@ class invoice(models.Model):
     SGST = models.CharField(max_length=100,default=0, null=True)
     # TCS = models.CharField(max_length=100,default=0, null=True)
     taxamount = models.CharField(max_length=100,default=0, null=True)
+    adjust = models.CharField(max_length=100,default=0, null=True)
     shipping_charge = models.CharField(max_length=100,default=0, null=True)
-
-
-    gsttype = models.CharField(max_length=100,null=True)
+    tot_inv_no = models.IntegerField(default=0, null=True)
 
 class invoice_item(models.Model):
     invoice = models.ForeignKey(invoice,on_delete=models.CASCADE)

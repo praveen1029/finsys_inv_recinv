@@ -3641,10 +3641,15 @@ def invcreate2(request):
 
         gst = custobject.gstin                                          # updated by Nasneen O M
         inv2 = invoice(customername=request.POST.get('customername'), email=request.POST.get('email'),
-                       invoiceno='1000',
+                       invoiceno=request.POST.get('inv_no'),cheque_no=request.POST.get("cheque_id"),
+                        upi_no=request.POST.get("upi_id"),
+                        pay_method=request.POST.get("method"),
                        invoicedate=request.POST.get('invoicedate'),
-                       terms=request.POST.get('terms'), duedate=request.POST.get('duedate'), bname=request.POST.get('bname'),
+                       terms=request.POST.get('terms'), duedate=request.POST.get('duedate'), 
+                       bname=request.POST.get('bname'),
                        placosupply=request.POST.get('placosupply'),
+                        paidoff = request.POST.get("advance"),
+                        balance = request.POST.get("balance"),
 
                        cid=cmp1,
                         subtotal=float(request.POST.get('subtotal')),
@@ -3654,11 +3659,14 @@ def invcreate2(request):
                        SGST = request.POST.get('sgst'),
                        #TCS = request.POST['TCS'],
                        shipping_charge = request.POST.get("ship"),
+                       adjust = request.POST.get("adj"),
                        taxamount = request.POST.get("taxamount"),
                        grandtotal=request.POST.get('grandtotal'),
                        amtrecvd=request.POST.get('amtrecvd'), 
                        baldue=request.POST.get('grandtotal'),)
         
+
+
         if len(request.FILES) != 0:
             inv2.file=request.FILES.get('file')
         orderno = 'OR'+str(random.randint(1111111,9999999))
@@ -3666,8 +3674,14 @@ def invcreate2(request):
             orderno = 'OR'+str(random.randint(1111111,9999999))
         inv2.invoice_orderno =orderno
         inv2.save()
-        inv2.invoiceno = int(inv2.invoiceno) + inv2.invoiceid
+
+        if 'Draft' in request.POST:
+            inv2.status = "Draft"
+        if "Save" in request.POST:
+            inv2.status = "Approved" 
         inv2.save()
+
+
 
         pl3=profit_loss()
         pl3.details = inv2.customername
@@ -3852,6 +3866,17 @@ def invcreate2(request):
                     temp = temp+int(ele[2])
                     itemqty.stockout =temp
                     itemqty.save()
+
+        all_inv = invoice.objects.all()
+        for inv in all_inv:
+            inv.tot_inv_no += 1
+            inv.save()
+        
+        last_inv = invoice.objects.last()
+        print(last_inv.tot_inv_no)
+        last_inv.tot_inv_no = last_inv.invoiceid
+        last_inv.save()
+
 
         return redirect('goinvoices')
     else:
@@ -28356,6 +28381,7 @@ def goinvoices(request):
     except:
         return redirect('godash')
 
+
 @login_required(login_url='regcomp')
 def goaddinvoices(request):
     try:
@@ -28373,10 +28399,11 @@ def goaddinvoices(request):
         acc  = accounts1.objects.filter(acctype='Cost of Goods Sold',cid=cmp1)
         acc1  = accounts1.objects.filter(acctype='Sales',cid=cmp1)
 
+
         ref = invoice.objects.last()
 
         if ref:
-            ref_no = int(ref.invoiceid) + 1
+            ref_no = int(ref.tot_inv_no) + 1
             inv_no = 1000+ref_no
 
         else:
@@ -28451,7 +28478,7 @@ def invoice_view(request,id):
         'igst' : igst,
         'sgst' : sgst,
         'cgst' : cgst,
-        'ship' : int(upd.shipping_charge)
+        'ship' : upd.shipping_charge
 
     }
 
@@ -28609,9 +28636,23 @@ def editinvoice(request, id):
         customers = customer.objects.filter(cid=cmp1).all()
         cust = customer.objects.get(customerid = invo3.customername.split(" ")[0])
         invitem = invoice_item.objects.filter(invoice =id )
+        bank = bankings_G.objects.filter(cid=cmp1)
+        terms  = PaymentTerms.objects.filter(cid=cmp1)
 
-        context = {'invoice': invo3, 'cmp1': cmp1, 'inv': inv, 'item':item,'invitem':invitem,
-                   'noninv': noninv, 'bun': bun, 'ser': ser,'customers':customers,'cust':cust}
+        paylist = ['Cash','Cheque','UPI']
+        if invo3.pay_method not in paylist:
+            bank_no = bankings_G.objects.get(bankname=invo3.pay_method,cid=cmp1)
+            acc_no = bank_no.account_number
+        else:
+            acc_no = ''
+
+        inv_list = ''
+        inv_ord = invoice.objects.all()
+        for s in inv_ord:
+            inv_list = s.invoiceno+ ',' + inv_list
+
+        context = {'invoice': invo3, 'cmp1': cmp1, 'inv': inv, 'item':item,'invitem':invitem,'bank':bank,'terms':terms,'inv_list':inv_list,
+                   'noninv': noninv, 'bun': bun, 'ser': ser,'customers':customers,'cust':cust,'acc_no':acc_no}
         return render(request, 'app1/editinvoice.html', context)
     except:
         return redirect('goinvoices')
@@ -29255,13 +29296,20 @@ def updateinvoice(request, id):
 @login_required(login_url='regcomp')
 def updateinvoice2(request, id):
     if request.method =='POST':
+
+        original_inv_date = datetime.strptime(request.POST.get('invoicedate'), '%Y-%m-%d')
+        formatted_inv_date = original_inv_date.strftime('%Y-%m-%d')
+
+        original_due_date = datetime.strptime(request.POST.get('duedate'), '%d-%m-%Y')
+        formatted_due_date = original_inv_date.strftime('%Y-%m-%d')
+
         cmp1 = company.objects.get(id=request.session['uid'])
         invoi = invoice.objects.get(invoiceid=id, cid=cmp1)
         invoi.customername = request.POST.get('customer')
         invoi.email = request.POST.get('email')
         invoi.terms = request.POST.get('terms')
-        invoi.invoicedate = request.POST.get('invoicedate')
-        invoi.duedate = request.POST.get('duedate')
+        invoi.invoicedate = formatted_inv_date
+        invoi.duedate = formatted_due_date
         invoi.bname = request.POST.get('bname')
         invoi.placosupply = request.POST.get('placosupply')
 
@@ -29278,6 +29326,14 @@ def updateinvoice2(request, id):
         # invoi.TCS = request.POST['TCS']
         invoi.shipping_charge = request.POST.get("ship")
         invoi.taxamount = request.POST.get("taxamount")
+        invoi.adjust = request.POST.get("adj")
+        invoi.shipping_charge = request.POST.get("ship")
+        invoi.pay_method = request.POST.get("method")
+        invoi.cheque_no = request.POST.get("cheque_id")
+        invoi.upi_no = request.POST.get("upi_id")
+        invoi.paidoff = request.POST.get("advance")
+        invoi.balance = request.POST.get("balance")
+        invoi.invoiceno = request.POST.get("inv_no")
  
         if len(request.FILES) != 0:
             if len(invoi.file) != "default.jpg" :
@@ -33998,6 +34054,7 @@ def itemdata(request):
         gst = item.intra_st
         sgst = item.inter_st
         places=cmp1.state
+
         return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst})
     return redirect('/')
 
@@ -40875,13 +40932,13 @@ def credit_item(request):
             cmp1 = company.objects.get(id=request.session['uid'])
                    
             item = itemtable(name=request.POST.get('name'),item_type=request.POST.get('type'),unit=request.POST.get('unit'),
-                                hsn=request.POST.get('hsn'),tax_reference=request.POST.get('taxref'),
+                                hsn=request.POST.get('hsn'),tax_reference=request.POST.get('taxref'),itmdate=date.today(),
                                 purchase_cost=request.POST.get('cost_price'),sales_cost=request.POST.get('sell_price'),
                                 acount_pur=request.POST.get('cost_acc'),account_sal=request.POST.get('sell_acc'),
                                 pur_desc=request.POST.get('cost_desc'),sale_desc=request.POST.get('sell_desc'),
                                 intra_st=request.POST.get('intra_st'),inter_st=request.POST.get('inter_st'), 
-                                inventry=None if request.POST.get('invacc') is None else request.POST.get('invacc'),
-                                stock=0 if request.POST.get('stock') == ' ' else request.POST.get('stock'),
+                                inventry= request.POST.get('invacc'),stockin=request.POST.get('stock'),
+                                stock=request.POST.get('stock'),stock_rate=request.POST.get('stock_rate'),
                                 status=request.POST.get('status'),
                                 cid=cmp1)
             item.save()
@@ -40923,7 +40980,8 @@ def cust_details(request):
         gstno = cust.gstin
         shipstate = cust.shipstate
        
-    return JsonResponse({'email': email,'street': street,'city':city,'pincode': pincode,"state": state,'country' : country,'gsttype':gsttype,'gstno':gstno,'shipstate':shipstate},safe=False)
+    return JsonResponse({'email': email,'street': street,'city':city,'pincode': pincode,"state": state,
+                            'country' : country,'gsttype':gsttype,'gstno':gstno,'shipstate':shipstate},safe=False)
 
 def balancedata(request):
     name = request.GET.get('name')
