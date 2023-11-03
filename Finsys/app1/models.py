@@ -306,6 +306,7 @@ class invoice(models.Model):
     pay_method = models.CharField(max_length=255, default='', null=True)
     cheque_no = models.CharField(max_length=255, default='', null=True)
     upi_no = models.CharField(max_length=255, default='', null=True)
+    bank_no = models.CharField(max_length=255, default='', null=True)
 
     paidoff=models.CharField(null=True,blank=True,max_length=255)
     balance=models.CharField(null=True,blank=True,max_length=255)

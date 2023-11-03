@@ -1037,6 +1037,7 @@ urlpatterns = [
     path('gorecinvoices',views.gorecinvoices,name='gorecinvoices'),
     path('createrecinvoices',views.createrecinvoices,name='createrecinvoices'),
     path('addrecinvoices',views.addrecinvoices,name='addrecinvoices'),
+    path('addrecinvoices1',views.addrecinvoices1,name='addrecinvoices1'),
     path('recinvoice_view/<int:id>',views.recinvoice_view,name='recinvoice_view'),
    	path('itemdata1',views.itemdata1,name='itemdata1'),
     path('reccreatecustomer1',views.reccreatecustomer1,name='reccreatecustomer1'),

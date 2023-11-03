@@ -3639,13 +3639,22 @@ def invcreate2(request):
         b = ' '.join(x[2:]) 
         custobject = customer.objects.get(firstname=a, lastname=b)
 
-        gst = custobject.gstin                                          # updated by Nasneen O M
+        gst = custobject.gstin           
+        
+        
+        original_inv_date = datetime.strptime(request.POST.get('invoicedate'), '%Y-%m-%d')
+        formatted_inv_date = original_inv_date.strftime('%Y-%m-%d')
+
+        original_due_date = datetime.strptime(request.POST.get('duedate'), '%d-%m-%Y')
+        formatted_due_date = original_due_date.strftime('%Y-%m-%d')
+                                       # updated by Nasneen O M
         inv2 = invoice(customername=request.POST.get('customername'), email=request.POST.get('email'),
                        invoiceno=request.POST.get('inv_no'),cheque_no=request.POST.get("cheque_id"),
                         upi_no=request.POST.get("upi_id"),
+                        bank_no=request.POST.get("bnk_id"),
                         pay_method=request.POST.get("method"),
-                       invoicedate=request.POST.get('invoicedate'),
-                       terms=request.POST.get('terms'), duedate=request.POST.get('duedate'), 
+                       invoicedate=formatted_inv_date,
+                       terms=request.POST.get('terms'), duedate=formatted_due_date, 
                        bname=request.POST.get('bname'),
                        placosupply=request.POST.get('placosupply'),
                         paidoff = request.POST.get("advance"),
@@ -3811,19 +3820,19 @@ def invcreate2(request):
         # accont.balance = accont.balance - TCS
         # accont.save()
 
-        product = request.POST.getlist("product[]")
-        hsn  = request.POST.getlist("hsn[]")
+        product = tuple(request.POST.getlist("product[]"))
+        hsn  =  tuple(request.POST.getlist("hsn[]"))
         # description = request.POST.getlist("description[]")
-        qty = request.POST.getlist("qty[]")
-        price = request.POST.getlist("price[]")
+        qty =  tuple(request.POST.getlist("qty[]"))
+        price =  tuple(request.POST.getlist("price[]"))
         
-        discount = request.POST.getlist("discount[]")
+        discount =  tuple(request.POST.getlist("discount[]"))
         if request.POST.get('placosupply') == cmp1.state:
-                tax = request.POST.getlist("tax1[]")
+                tax =  tuple(request.POST.getlist("tax1[]"))
         else:
-                tax = request.POST.getlist("tax2[]")
+                tax =  tuple(request.POST.getlist("tax2[]"))
         # print(tax)
-        total = request.POST.getlist("total[]")
+        total =  tuple(request.POST.getlist("total[]"))
 
         invoiceid=invoice.objects.get(invoiceid =inv2.invoiceid)
 
@@ -28462,24 +28471,16 @@ def invoice_view(request,id):
     cust = customer.objects.get(customerid = upd.customername.split(" ")[0])
     invitem = invoice_item.objects.filter(invoice=id)
 
-    igst = upd.IGST
-    sgst = upd.SGST
-    cgst = upd.CGST
-
-    total = upd.grandtotal
-    words_total = num2words(total)
+    dis = 0
+    for i in invitem:
+        dis += int(i.discount)
 
     context ={
         'invoice':upd,
         'cmp1':cmp1,
-        'words_total':words_total,
         'invitem':invitem,
         'cust' : cust,
-        'igst' : igst,
-        'sgst' : sgst,
-        'cgst' : cgst,
-        'ship' : upd.shipping_charge
-
+        'dis':dis
     }
 
 
@@ -28639,20 +28640,13 @@ def editinvoice(request, id):
         bank = bankings_G.objects.filter(cid=cmp1)
         terms  = PaymentTerms.objects.filter(cid=cmp1)
 
-        paylist = ['Cash','Cheque','UPI']
-        if invo3.pay_method not in paylist:
-            bank_no = bankings_G.objects.get(bankname=invo3.pay_method,cid=cmp1)
-            acc_no = bank_no.account_number
-        else:
-            acc_no = ''
-
         inv_list = ''
         inv_ord = invoice.objects.all()
         for s in inv_ord:
             inv_list = s.invoiceno+ ',' + inv_list
 
         context = {'invoice': invo3, 'cmp1': cmp1, 'inv': inv, 'item':item,'invitem':invitem,'bank':bank,'terms':terms,'inv_list':inv_list,
-                   'noninv': noninv, 'bun': bun, 'ser': ser,'customers':customers,'cust':cust,'acc_no':acc_no}
+                   'noninv': noninv, 'bun': bun, 'ser': ser,'customers':customers,'cust':cust}
         return render(request, 'app1/editinvoice.html', context)
     except:
         return redirect('goinvoices')
@@ -29301,7 +29295,7 @@ def updateinvoice2(request, id):
         formatted_inv_date = original_inv_date.strftime('%Y-%m-%d')
 
         original_due_date = datetime.strptime(request.POST.get('duedate'), '%d-%m-%Y')
-        formatted_due_date = original_inv_date.strftime('%Y-%m-%d')
+        formatted_due_date = original_due_date.strftime('%Y-%m-%d')
 
         cmp1 = company.objects.get(id=request.session['uid'])
         invoi = invoice.objects.get(invoiceid=id, cid=cmp1)
@@ -29331,6 +29325,7 @@ def updateinvoice2(request, id):
         invoi.pay_method = request.POST.get("method")
         invoi.cheque_no = request.POST.get("cheque_id")
         invoi.upi_no = request.POST.get("upi_id")
+        invoi.bank_no = request.POST.get("bnk_id")
         invoi.paidoff = request.POST.get("advance")
         invoi.balance = request.POST.get("balance")
         invoi.invoiceno = request.POST.get("inv_no")
@@ -29342,6 +29337,66 @@ def updateinvoice2(request, id):
             invoi.file = request.FILES.get('file')
 
         invoi.save()
+
+        product = tuple(request.POST.getlist("product[]"))
+        hsn  = tuple(request.POST.getlist("hsn[]"))
+        description =tuple( request.POST.getlist("description[]"))
+        qty = tuple(request.POST.getlist("qty[]"))
+        price = tuple(request.POST.getlist("price[]"))
+        if request.POST.get('placosupply') == cmp1.state:
+                tax =tuple( request.POST.getlist("tax1[]"))
+        else:
+                tax = tuple(request.POST.getlist("tax2[]"))
+        total = tuple(request.POST.getlist("total[]"))
+        discount = tuple(request.POST.getlist("discount[]"))
+        itemid = request.POST.getlist("id[]")
+        item_ids = [int(id) for id in itemid]
+
+        inv= invoice.objects.get(invoiceid =invoi.invoiceid)
+        inv_item = invoice_item.objects.filter(invoice=inv)
+        object_ids = [obj.id for obj in inv_item]
+        ids_to_delete = [obj_id for obj_id in object_ids if obj_id not in item_ids]
+
+        invoice_item.objects.filter(id__in=ids_to_delete).delete()
+ 
+        
+        # import pdb; pdb.set_trace()
+        count = invoice_item.objects.filter(invoice=inv).count()
+        if len(product)==len(hsn)==len(discount)==len(qty)==len(price)==len(tax)==len(total):
+            # mapped=zip(product,hsn,description,qty,price,tax,total,itemid)
+            # mapped=list(mapped)
+            # for ele in mapped:
+            #     created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],description=ele[2],
+            #     qty=ele[3],price=ele[4],tax=ele[5],total=ele[6])
+
+            try:
+                mapped=zip(product,hsn,qty,price,tax,discount,total,item_ids)
+                mapped=list(mapped)
+
+                for ele in mapped:
+                    if int(len(product))>int(count):
+                        if ele[7] == 0:
+                            invoiceAdd = invoice_item.objects.create(product = ele[0],hsn=ele[1],qty=ele[2],
+                            price=ele[3],tax=ele[4],discount=ele[5],total=ele[6],invoice=inv,cid=cmp1)
+
+                        else:
+                            created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
+                            price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
+                    else:
+                        created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
+                        price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
+                        
+            except:
+                    mapped=zip(product,hsn,qty,price,tax,total,item_ids)
+                    mapped=list(mapped)
+                    
+                    for ele in mapped:
+                        dbs=invoice_item.objects.get(id=ele[7],cid=cmp1.cid)
+                        
+                        created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
+                        price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
+                
+                   
 
         pl3=profit_loss.objects.get(cid=cmp1,inv=invoi)
         pl3.details = invoi.customername
@@ -29411,68 +29466,7 @@ def updateinvoice2(request, id):
         bs7.save()
 
 
-        product = request.POST.getlist("product[]")
-        hsn  = request.POST.getlist("hsn[]")
-        description = request.POST.getlist("description[]")
-        qty = request.POST.getlist("qty[]")
-        price = request.POST.getlist("price[]")
         
-        if request.POST.get('placosupply') == cmp1.state:
-                tax = request.POST.getlist("tax1[]")
-        else:
-                tax = request.POST.getlist("tax2[]")
-        total = request.POST.getlist("total[]")
-        discount = request.POST.getlist("discount[]")
-        itemid = request.POST.getlist("id[]")
-
-        item_ids = [int(id) for id in itemid]
-
-        inv= invoice.objects.get(invoiceid =invoi.invoiceid)
-        inv_item = invoice_item.objects.filter(invoice=inv)
-        object_ids = [obj.id for obj in inv_item]
-        ids_to_delete = [obj_id for obj_id in object_ids if obj_id not in item_ids]
-
-        invoice_item.objects.filter(id__in=ids_to_delete).delete()
- 
-        
-        # import pdb; pdb.set_trace()
-        count = invoice_item.objects.filter(invoice=inv).count()
-        if len(product)==len(hsn)==len(discount)==len(qty)==len(price)==len(tax)==len(total):
-            # mapped=zip(product,hsn,description,qty,price,tax,total,itemid)
-            # mapped=list(mapped)
-            # for ele in mapped:
-            #     created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],description=ele[2],
-            #     qty=ele[3],price=ele[4],tax=ele[5],total=ele[6])
-
-            try:
-                mapped=zip(product,hsn,qty,price,tax,discount,total,item_ids)
-                mapped=list(mapped)
-
-                for ele in mapped:
-                    if int(len(product))>int(count):
-                        print(ele)
-                        if ele[7] == 0:
-                            invoiceAdd = invoice_item.objects.create(product = ele[0],hsn=ele[1],qty=ele[2],
-                            price=ele[3],tax=ele[4],discount=ele[5],total=ele[6],invoice=inv,cid=cmp1)
-
-                        else:
-                            created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
-                            price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
-                    else:
-                        created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
-                        price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
-                        
-            except:
-                    mapped=zip(product,hsn,qty,price,tax,total,item_ids)
-                    mapped=list(mapped)
-                    
-                    for ele in mapped:
-                        dbs=invoice_item.objects.get(id=ele[7],cid=cmp1.cid)
-                        
-                        created = invoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
-                        price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
-                
-                   
         return redirect('invoice_view',id)
         # product = request.POST.getlist("product[]")
         # hsn  = request.POST.getlist("hsn[]")
@@ -42334,7 +42328,6 @@ def gorecinvoices(request):
         cmp1 = company.objects.get(id=request.session['uid'])
         
         recinvs = recinvoice.objects.filter(cid=cmp1).all()
-        print(recinvs)
         return render(request,'app1/recinvoices.html',{'cmp1': cmp1,'recinvs':recinvs})
     return render(request, 'app1/recinvoices.html')
 
@@ -42371,6 +42364,41 @@ def addrecinvoices(request):
                     'rpt' :rpt,
                 }
         return render(request,'app1/addrecinvoices1.html',context)
+    return redirect('addrecinvoices')
+
+def addrecinvoices1(request):
+    if 'uid' in request.session:
+        if request.session.has_key('uid'):
+            uid = request.session['uid']
+        else:
+            return redirect('/')
+        # toda = date.today()
+        # tod = toda.strftime("%Y-%m-%d")
+        cmp1 = company.objects.get(id=request.session['uid'])
+        itm = itemtable.objects.filter(cid=cmp1)
+        unit = unittable.objects.filter(cid=cmp1)
+        rec = recinvoice.objects.filter(cid=cmp1)
+        rpt = repeatevry.objects.filter(cid=cmp1)
+        cust = customer.objects.filter(cid=cmp1)
+        cpd = creditperiod.objects.filter(cid=cmp1)
+        acc2 = accounts1.objects.filter(cid=cmp1,acctype='Sales')
+        acc1 = accounts1.objects.filter(cid=cmp1,acctype='Cost of Goods Sold')
+        rterm = recterm.objects.filter(cid=cmp1)
+        
+        context = {
+                    'cmp1': cmp1,
+                    'item':itm ,
+                    'unit':unit,
+                    'cust':cust, 
+                    # 'tod': tod,       
+                    'cpd':cpd ,
+                    'acc1':acc1,    
+                    'acc2':acc2,
+                    'rec' :rec  ,
+                    'rterm' :rterm,
+                    'rpt' :rpt,
+                }
+        return render(request,'app1/addrecinvoices4.html',context)
     return redirect('addrecinvoices')
 
 

@@ -148,11 +148,15 @@
               <label class="col-form-label">Terms </label>
               <div class="d-flex">
                 <select class="custom-select" name="terms" required style="background-color: #43596c;; color: white;" id="termadd">
-                  <option selected id="trmopt" value="{{ invoice.terms }}" hidden>NET {{ invoice.terms }}</option>
-                  <option value="0">Due on Receipt</option>
-                  <option value="30">NET 30</option>
-                  <option value="60">NET 60</option>
-                  {% for term in terms %}
+                    {% if invoice.terms == '0' %}
+                        <option selected id="trmopt" value="{{ invoice.terms }}" hidden>Due on Receipt</option>
+                    {% else %}
+                        <option selected id="trmopt" value="{{ invoice.terms }}" hidden>NET {{ invoice.terms }}</option>
+                    {% endif %}
+                    <option value="0">Due on Receipt</option>
+                    <option value="30">NET 30</option>
+                    <option value="60">NET 60</option>
+                    {% for term in terms %}
                         <option value="{{term.days}}">{{term.term}}</option>
                     {% endfor %}
                 </select>
@@ -162,7 +166,7 @@
             <div class="col-md-3">
                 <label class="col-form-label">Payment Type</label>
                 <select class="form-control my-select" id="pay_method" name="method" style="background-color: #43596c;">
-                    <option value="{{sale.pay_method}}" selected hidden>{{invoice.pay_method}}</option>
+                    <option value="{{invoice.pay_method}}" selected hidden>{{invoice.pay_method}}</option>
                     <option value="Cash">Cash</option>
                     <option value="Cheque">Cheque</option>
                     <option value="UPI">UPI</option>
@@ -193,10 +197,10 @@
                   <input type="text" class="form-control" name="upi_id" id="upi_id" placeholder="Enter UPI ID">
               </div>
             {% endif %}
-            {% if acc_no %}
+            {% if invoice.bank_no %}
             <div class="col-md-3 mt-3" id="bnkdiv" >
                 <label class="col-form-label" >Bank Account</label>
-                <input type="text" class="form-control" name="bnk_id" id="bnk_id" style="background-color: #43596c;" value="{{acc_no}}" readonly>
+                <input type="text" class="form-control" name="bnk_id" id="bnk_id" style="background-color: #43596c;" value="{{invoice.bank_no}}" readonly>
             </div>
             {% else %}
             <div class="col-md-3 mt-3" style="display:none;" id="bnkdiv">
@@ -228,8 +232,7 @@
 
                   {% for j in invitem %}
                   <tr id='addr0{{ forloop.counter }}'>
-                    <td style="text-align: center;" class="nnum">{{ forloop.counter }} 
-                      <input type="text"  name='id[]' value="{{ j.id }}" hidden>
+                    <td style="text-align: center;" class="nnum">{{ forloop.counter }}<input type="text"  name='id[]' value="{{ j.id }}" hidden>
                     </td>
                     <td style="width: 20%;" >
                         <div class="d-flex">
@@ -1377,17 +1380,20 @@
           $('#chequediv').hide()
           $('#bnkdiv').hide()
           $('#upidiv').hide()
+          document.getElementById('bnk_id').value=null
           document.getElementById('cheque_id').value=null
           document.getElementById('upi_id').value=null
         }else if(x==='Cheque'){
           $('#chequediv').show()
           $('#bnkdiv').hide()
           $('#upidiv').hide()
+          document.getElementById('bnk_id').value=null
           document.getElementById('upi_id').value=null
         }else if(x==='UPI'){
           $('#upidiv').show()
           $('#bnkdiv').hide()
           $('#chequediv').hide()
+          document.getElementById('bnk_id').value=null
           document.getElementById('cheque_id').value=null
         }else{
           $('#bnkdiv').show()
@@ -2025,7 +2031,7 @@ $(document).ready(function() {
     
       `
       <tr id='addr0${roinc}'>
-        <td class = 'nnum' style="text-align: center;">${roinc}</td>
+        <td class = 'nnum' style="text-align: center;">${roinc}<input type="text"  name='id[]' value= 0 hidden></td>
                         <td style="width: 20%;">
                           <div class="d-flex">
                             <select name='product[]' id="product${roinc}" class="form-control product" style="background-color: #43596c; color: white;" onchange="changeprd(this.id)">
@@ -2250,7 +2256,8 @@ $(document).ready(function() {
                 $('#tax_amount').val(taxamount.toFixed(2));
                 ship = parseFloat($("#ship").val());
                 // console.log( ship);
-                gtot = taxamount + total + ship;
+                adj_val = parseFloat($('#adj').val())
+                gtot = taxamount + total + ship+adj_val;
                 $('#grandtotal').val(gtot.toFixed(2));
                 $('#baldue').val(gtot.toFixed(2));
                 adv_val = parseFloat($('#advance').val())

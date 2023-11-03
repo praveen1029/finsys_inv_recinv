@@ -21,7 +21,7 @@
       <div class="card-body">
         <div class="card-title">
           <center>
-            <h3 class="mb-0" id="invnumb">INVOICE</h3>
+            <h3 class="mb-0" id="invnumb">ADD RECCURING INVOICE</h3>
           </center>
         </div>
         <hr />
@@ -45,17 +45,17 @@
           <div class="row">
             <div class="col-md-4 4">
             <div class="d-flex">
-                <label class="col-form-label">Invoice No.</label><span class="text-danger mt-1 ml-3" id="dangerdiv" style="display: none;"><span class="text-white"> (</span>This Number Should be Continous <span class="text-white">)</span></span>
+                <label class="col-form-label">Reccuring Invoice No.</label><span class="text-danger mt-1 ml-3" id="dangerdiv" style="display: none;"><span class="text-white"> (</span>This Number Should be Continous <span class="text-white">)</span></span>
             </div>
-            <input type="text" class="form-control" name="inv_no"  id="inv_no" style="background-color: #43596c;" placeholder="{{inv_no}}"><br>
+            <input type="text" class="form-control" name="rec_no"  id="rec_no" style="background-color: #43596c;" placeholder="{{rec_no}}"><br>
 
               <label class="col-form-label mt-2">Select Customer</label>
               <div class="d-flex">
                 <select name="customername" id="customer" class="form-control" style="background-color: #43596c; color: white;">
                   <option value="NIL" disabled selected hidden>Select Customer</option>
-                  {% for cust in customers %}
-                  {% if cust.cid_id == cmp1.cid %}
-                  <option value="{{ cust.customerid }} {{ cust.firstname }} {{ cust.lastname }}"> {{ cust.title }} {{ cust.firstname }} {{ cust.lastname }}</option>
+                  {% for c in cust %}
+                  {% if c.cid_id == cmp1.cid %}
+                  <option value="{{ c.customerid }} {{ c.firstname }} {{ c.lastname }}"> {{ c.title }} {{ c.firstname }} {{ c.lastname }}</option>
                   {% endif %}
                   {% endfor %}
                 </select>
@@ -130,9 +130,25 @@
             </div>
             </div>
           </div>
+            <div class="row mt-4">
+                <div class="col-md-4 mt-3">
+                    <label class="col-form-label" for="profname">  Profile Name:</label>
+                    <input type="text" class="form-control"  name="profname" id="profname" style="width:99%; " ></input>
+                </div>
+
+                <div  class="col-md-3 pt-4 mt-3" >
+                    <br>
+                    Entity Type:    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="radio" id="invoice" name="recinvoice" value="INVOICE" checked>
+                    <label for="invoice">Invoice</label>&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="radio" id="bill" name="recinvoice" value="Bill">
+                    <label for="bill">Bill of Supply</label>
+
+                </div>
+            </div>
 
           <div class="row mt-4">
-            <div class="col-md-3 ">
+            <div class="col-md-3">
               <label class="col-form-label">Invoice Date:</label>
               <div>
                 <input type="date" class="form-control" name="invoicedate" id="invoicedate" style="background-color: #43596c; color: white;">
@@ -157,7 +173,32 @@
                 <a class="btn btn-outline-secondary ml-1" role="button" data-target="#newpayment" data-toggle="modal" id="termsadd">+</a>
             </div>
         </div>
+
         <div class="col-md-3">
+            <label class="col-form-label" for="ordernum"> Order Number: </label> 
+            <input class="form-control" type="text" name="ordernum" id="ordernum" style="width:99%; height: 40px; " ></input>
+        </div>
+
+        <div class="col-md-3 mt-3">
+            <label for="reptevery" class="col-form-label"> Repeate Every:</label> 
+        
+            <div class="d-flex">
+                <select class="form-control" style="width:99%; "  name="reptevery" id="reptevery">
+                    <option value="1 WEEK" selected>Week</option>
+                    <option value="2 MONTH" >2 Month</option>
+                    <option value="3 MONTH" >3 Month</option>
+                    <option value="4 MONTH" >4 Month</option>
+                    {% for rpt in rpt %}
+  
+                        <option text="{{ rpt.id }}" value="{{ rpt.name }} "> Month {{ rpt.name }}  </option>
+          
+                    {% endfor %}
+                </select>
+                <a class="btn btn-outline-secondary ml-1" data-target="#repeatevry" data-toggle="modal">+</a>
+            </div>   
+        </div>
+
+        <div class="col-md-3 mt-3">
             <label class="col-form-label">Payment Type</label>
             <select class="form-control my-select" id="pay_method" name="method" style="background-color: #43596c;">
                 <option value=" " selected hidden>Select Payment Method</option>
@@ -429,6 +470,30 @@
 
 <!-- modal hsncode edit -->
 
+<div class="modal fade" id="repeatevry">
+    <div class="modal-dialog modal-m">
+        <div class="modal-content" style="background-color: #213b52;">
+            <div class="modal-header ">
+                <h3 class="m-3" >ADD NEW</h3>
+            </div>
+            <div class="modal-body">
+
+                <form action="" method="POST" autocomplete="off" id="modalPayment1">{% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-12" >
+                            <label for="repeatevry" style="text-align: left;" >Repeate every : </label>
+                            <br>
+                            <input name="repeatevry" class="form-control" id="repeatevry1" type="text"/>
+                            <br>
+                            <button class="btn btn-outline-info text-grey mb-3"type="submit" data-dismiss="modal" id="paySave1" style="align-items: center;">Save</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="edithsn" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -1205,6 +1270,8 @@
 
 
 
+
+
 <script src="{% static 'assets/plugins/select2/js/select2.min.js' %}"></script>
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
@@ -1246,9 +1313,9 @@
 
 
 <script type="text/javascript">
-    $(document).on('change','#inv_no', function() {
-        inv = '{{inv_no}}'
-        inv_value = $('#inv_no').val();
+    $(document).on('change','#rec_no', function() {
+        inv = '{{rec_no}}'
+        inv_value = $('#rec_no').val();
         if(inv_value != inv){
             document.getElementById('dangerdiv').style.display = 'block';
         }else{
@@ -1260,7 +1327,7 @@
             if (inv_value == invlist[i]){
                 alert('Invoice Number Number already in use.')
                 document.getElementById('dangerdiv').style.display = 'none';
-                document.getElementById('inv_no').value = ''
+                document.getElementById('rec_no').value = ''
             }
         }
     })
