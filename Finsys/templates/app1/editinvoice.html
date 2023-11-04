@@ -54,7 +54,7 @@
                   </option>
                   {% for cust in customers %}
                       {% if cust.cid_id == cmp1.cid %}
-                          <option text=""
+                          <option
                                   value="{{ cust.customerid }} {{ cust.firstname }} {{ cust.lastname }}">{{cust.title}} {{ cust.firstname }} {{ cust.lastname }}</option>
                       {% endif %}
                   {% endfor %}
@@ -123,12 +123,12 @@
             
               {% if cust.gstin %}
               <div id="gstnodiv" >
-                  <label class="col-form-label">GSTIN</label>
+                  <label class="col-form-label  mt-2">GSTIN</label>
                   <input type="text" class="form-control" id="gstno" name="gstno" style="background-color: #43596c;" value="{{cust.gstin}}" readonly>
               </div>
               {% else %}
                   <div id="gstnodiv" style="display: none;">
-                  <label class="col-form-label">GSTIN</label>
+                  <label class="col-form-label mt-2">GSTIN</label>
                   <input type="text" class="form-control" id="gstno" name="gstno" style="background-color: #43596c;" readonly>
               </div>
               {% endif %}
@@ -163,7 +163,13 @@
                 <a class="btn btn-outline-secondary ml-1" role="button" data-target="#newpayment" data-toggle="modal" id="termsadd">+</a>
               </div>
             </div>
+
             <div class="col-md-3">
+                <label class="col-form-label" for="ordernum"> Order Number: </label> 
+                <input class="form-control" type="text" name="ordernum" id="ordernum" style="width:99%; height: 40px; "  value="{{invoice.invoice_orderno}}"></input>
+            </div>
+
+            <div class="col-md-3 mt-2">
                 <label class="col-form-label">Payment Type</label>
                 <select class="form-control my-select" id="pay_method" name="method" style="background-color: #43596c;">
                     <option value="{{invoice.pay_method}}" selected hidden>{{invoice.pay_method}}</option>

@@ -477,7 +477,7 @@ footer p {
                             </div>
                             <div class="row mb-4 d-flex justify-content-between align-items-center">
                                 <div class="col-md-3 mt-3">
-                                    <h6 class="mb-0">Order Date</h6>
+                                    <h6 class="mb-0">Invoice Date</h6>
                                 </div>
                                 <div class="col-md-3 mt-3">
                                     <p class="mb-0 text-right">{{invoice.invoicedate | date:'d-m-Y'}}</p>
@@ -497,8 +497,11 @@ footer p {
                                 <div class="col-md-3 mt-3 vr">
                                     <p class="mb-0">{{invoice.bname}}</p>
                                 </div>
-                                <div class="col-md-6 mt-3 vl">
-                                    <h6 class="mb-0">&nbsp;</h6>
+                                <div class="col-md-3 mt-3 vl"> 
+                                    <h6 class="mb-0">Order No</h6>
+                                </div>
+                                <div class="col-md-3 mt-3">
+                                    <p class="mb-0 text-right">{{invoice.invoice_orderno}}</p>
                                 </div>
                             </div>
                             <hr>
@@ -561,7 +564,7 @@ footer p {
                         <div class="p-5">
                             <h3 class="fw-bold mb-3 mt-2 pt-1">BILL</h3>
                             <div class="d-flex justify-content-between mb-4">
-                                <h5 class="">Bill status</h5>
+                                <h5 class="">Bill Status</h5>
                                 <h6>{{ invoice.status }}</h6>
                             </div>
                             <hr class="my-4" style="background-color: #fff;">
@@ -632,6 +635,7 @@ footer p {
                                     </div>
                                     <div class="position-relative">
                                         <p>Invoice No. <span>{{ invoice.invoiceno }}</span></p>
+                                        <p>Order No. <span>{{ invoice.invoice_orderno }}</span></p>
                                     </div>
                                 </div>
                             </section>
@@ -816,6 +820,7 @@ footer p {
                               <div class="col-md-4 d-flex justify-content-end">
                                   <div class="text-white">
                                       <p class="mb-0 mt-2">Invoice No: <b>{{invoice.invoiceno }}</b></p>
+                                      <p class="mb-0 mt-2">Order No: <b>{{invoice.invoice_orderno }}</b></p>
                                   </div>
                                   <!-- <div class="mt-2">
                                       <p style="color: #000;">Date : <b>{{ ewbill.bill_date | date:'d-m-Y' }}</b></p>
@@ -1011,9 +1016,14 @@ footer p {
                                         <table class="table table-borderless">
                                             <tbody>
                                                 <tr >
-                                                    <td style="color: #000; font-weight: bold;">invoices No</td>
+                                                    <td style="color: #000; font-weight: bold;">Invoices No</td>
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{ invoice.invoiceno }}</td>
+                                                </tr>
+                                                <tr >
+                                                    <td style="color: #000; font-weight: bold;">Order No</td>
+                                                    <td style="color: #000;">:</td>
+                                                    <td class="text-right" style="color: #000;">{{ invoice.invoice_orderno }}</td>
                                                 </tr>
                                                 
                                                 <tr >
@@ -1163,6 +1173,10 @@ footer p {
                                     <div class="row">
                                         <div class="col-md-6 text-left">Invoice No:</div>
                                         <div class="col-md-5 text-right">{{invoice.invoiceno}}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 text-left">Order No:</div>
+                                        <div class="col-md-5 text-right">{{invoice.invoice_orderno}}</div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 text-left">Customer Name:</div>

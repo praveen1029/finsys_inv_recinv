@@ -3659,6 +3659,7 @@ def invcreate2(request):
                        placosupply=request.POST.get('placosupply'),
                         paidoff = request.POST.get("advance"),
                         balance = request.POST.get("balance"),
+                        invoice_orderno = request.POST.get('ordernum'),
 
                        cid=cmp1,
                         subtotal=float(request.POST.get('subtotal')),
@@ -3678,10 +3679,6 @@ def invcreate2(request):
 
         if len(request.FILES) != 0:
             inv2.file=request.FILES.get('file')
-        orderno = 'OR'+str(random.randint(1111111,9999999))
-        while invoice.objects.filter(invoice_orderno=orderno ) is None:
-            orderno = 'OR'+str(random.randint(1111111,9999999))
-        inv2.invoice_orderno =orderno
         inv2.save()
 
         if 'Draft' in request.POST:
@@ -3882,7 +3879,6 @@ def invcreate2(request):
             inv.save()
         
         last_inv = invoice.objects.last()
-        print(last_inv.tot_inv_no)
         last_inv.tot_inv_no = last_inv.invoiceid
         last_inv.save()
 
@@ -29306,6 +29302,7 @@ def updateinvoice2(request, id):
         invoi.duedate = formatted_due_date
         invoi.bname = request.POST.get('bname')
         invoi.placosupply = request.POST.get('placosupply')
+        invoi.invoice_orderno = request.POST.get('ordernum')
 
    
         invoi.subtotal =float(request.POST.get('subtotal'))
@@ -42327,7 +42324,11 @@ def gorecinvoices(request):
             return redirect('/')
         cmp1 = company.objects.get(id=request.session['uid'])
         
-        recinvs = recinvoice.objects.filter(cid=cmp1).all()
+        recinvs = recinvoice.objects.filter(cid=cmp1).values()
+        for i in recinvs:
+            cust = " " . join(i['customername'].split(" ")[1:])
+            i['cust'] = cust
+
         return render(request,'app1/recinvoices.html',{'cmp1': cmp1,'recinvs':recinvs})
     return render(request, 'app1/recinvoices.html')
 
@@ -42340,66 +42341,86 @@ def addrecinvoices(request):
         # toda = date.today()
         # tod = toda.strftime("%Y-%m-%d")
         cmp1 = company.objects.get(id=request.session['uid'])
-        itm = itemtable.objects.filter(cid=cmp1)
-        unit = unittable.objects.filter(cid=cmp1)
-        rec = recinvoice.objects.filter(cid=cmp1)
         rpt = repeatevry.objects.filter(cid=cmp1)
         cust = customer.objects.filter(cid=cmp1)
-        cpd = creditperiod.objects.filter(cid=cmp1)
-        acc2 = accounts1.objects.filter(cid=cmp1,acctype='Sales')
-        acc1 = accounts1.objects.filter(cid=cmp1,acctype='Cost of Goods Sold')
-        rterm = recterm.objects.filter(cid=cmp1)
-        
-        context = {
-                    'cmp1': cmp1,
-                    'item':itm ,
-                    'unit':unit,
-                    'cust':cust, 
-                    # 'tod': tod,       
-                    'cpd':cpd ,
-                    'acc1':acc1,    
-                    'acc2':acc2,
-                    'rec' :rec  ,
-                    'rterm' :rterm,
-                    'rpt' :rpt,
-                }
+        acc  = accounts1.objects.filter(acctype='Cost of Goods Sold',cid=cmp1)
+        acc1  = accounts1.objects.filter(acctype='Sales',cid=cmp1)
+        customers = customer.objects.all()
+        cust = customer.objects.filter(cid=cmp1)
+        item = itemtable.objects.filter(cid=cmp1).all()
+
+        ref = recinvoice.objects.last()
+
+        if ref:
+            ref_no = int(ref.tot_inv_no) + 1
+            rec_no = 1000+ref_no
+
+        else:
+            ref_no = 1
+            rec_no = 1001
+
+        sel = recinvoice.objects.filter(cid=cmp1).last()
+        if sel:
+            rec_no = str(sel.recinvoiceno)
+            numbers = []
+            stri = []
+            for word in rec_no:
+                if word.isdigit():
+                    numbers.append(word)
+                else:
+                    stri.append(word)
+            
+            num=''
+            for i in numbers:
+                num +=i
+            
+            st = ''
+            for j in stri:
+                st = st+j
+
+            rec_no = int(num)+1
+
+            if num[0] == '0':
+                if rec_no <10:
+                    rec_no = st+'0'+ str(rec_no)
+                else:
+                    rec_no = st+ str(rec_no)
+            else:
+                rec_no = st+ str(rec_no)
+
+        inv_list = ''
+        inv_ord = recinvoice.objects.all()
+        for s in inv_ord:
+            inv_list = s.recinvoiceno+ ',' + inv_list
+
+        terms  = PaymentTerms.objects.filter(cid=cmp1)
+        bank = bankings_G.objects.filter(cid=cmp1)
+
+        context = {'cmp1': cmp1, 'customers': customers,'bank':bank,'terms':terms,'cust':cust,'item':item,
+                   'acc':acc,'acc1':acc1,'inv_list':inv_list, 'ref_no':ref_no, 'rec_no':rec_no
+                   }
         return render(request,'app1/addrecinvoices1.html',context)
     return redirect('addrecinvoices')
 
 def addrecinvoices1(request):
-    if 'uid' in request.session:
-        if request.session.has_key('uid'):
-            uid = request.session['uid']
-        else:
-            return redirect('/')
-        # toda = date.today()
-        # tod = toda.strftime("%Y-%m-%d")
-        cmp1 = company.objects.get(id=request.session['uid'])
-        itm = itemtable.objects.filter(cid=cmp1)
-        unit = unittable.objects.filter(cid=cmp1)
-        rec = recinvoice.objects.filter(cid=cmp1)
-        rpt = repeatevry.objects.filter(cid=cmp1)
-        cust = customer.objects.filter(cid=cmp1)
-        cpd = creditperiod.objects.filter(cid=cmp1)
-        acc2 = accounts1.objects.filter(cid=cmp1,acctype='Sales')
-        acc1 = accounts1.objects.filter(cid=cmp1,acctype='Cost of Goods Sold')
-        rterm = recterm.objects.filter(cid=cmp1)
-        
-        context = {
-                    'cmp1': cmp1,
-                    'item':itm ,
-                    'unit':unit,
-                    'cust':cust, 
-                    # 'tod': tod,       
-                    'cpd':cpd ,
-                    'acc1':acc1,    
-                    'acc2':acc2,
-                    'rec' :rec  ,
-                    'rterm' :rterm,
-                    'rpt' :rpt,
-                }
-        return render(request,'app1/addrecinvoices4.html',context)
-    return redirect('addrecinvoices')
+    cmp1 = company.objects.get(id=request.session['uid'])
+    upd = recinvoice.objects.get(recinvoiceid=3, cid=cmp1)
+    cust = customer.objects.get(customerid = upd.customername.split(" ")[0])
+    recinvitem = recinvoice_item.objects.filter(recinvoice=3)
+
+    dis = 0
+    for i in recinvitem:
+        dis += int(i.discount)
+
+    context ={
+        'recinvoice':upd,
+        'cmp1':cmp1,
+        'recinvitem':recinvitem,
+        'cust' : cust,
+        'dis':dis
+    }
+
+    return render(request,'app1/addrecinvoices4.html',context)
 
 
 def createrecinvoices(request):
@@ -42410,57 +42431,80 @@ def createrecinvoices(request):
             return redirect('/')
         cmp1 = company.objects.get(id=request.session['uid'])
         if request.method == 'POST':
-            
-            cusname=str(request.POST.get('customername',False))
+
+            original_inv_date = datetime.strptime(request.POST.get('invoicedate'), '%Y-%m-%d')
+            formatted_inv_date = original_inv_date.strftime('%Y-%m-%d')
+
+            original_due_date = datetime.strptime(request.POST.get('duedate'), '%d-%m-%Y')
+            formatted_due_date = original_due_date.strftime('%Y-%m-%d')       
+
+            cname = str(request.POST.get('customername',False))
+            recinvoiceno=str(request.POST.get('rec_no',False))
             terms=str(request.POST.get('terms',False))
-            startdate=request.POST['startdate']
-            enddate=request.POST['enddate']
             email=str(request.POST.get('email',False))
-            bname=str(request.POST.get('billingaddress',False))
+            bname=str(request.POST.get('bname',False))
             placosupply=request.POST['placosupply']
             profilename=str(request.POST.get('profname',False))
             ordernumber=str(request.POST.get('ordernum',False))
-            discount=request.POST['discount']
-            taxamount=request.POST['tax_amount']
+            taxamount=request.POST['taxamount']
             repeate_every=str(request.POST.get('reptevery',False))
             subtotal=request.POST.get('subtotal',False)
             note = str(request.POST.get('Note',False))
-            IGST = str(request.POST.get('IGST',False))
-            CGST = str(request.POST.get('CGST',False))
-            SGST = str(request.POST.get('SGST',False))
-            TCS = str(request.POST.get('TCS',False))
+            IGST = str(request.POST.get('igst',False))
+            CGST = str(request.POST.get('cgst',False))
+            SGST = str(request.POST.get('sgst',False))
             grandtotal=request.POST.get('grandtotal',False)
             amtrecvd=request.POST.get('amtrecvd',False)
-            baldue=request.POST.get('baldue',False)
-            gsttype=request.POST.get('gsttype',False)
-            rec = recinvoice(customername=cusname,email=email,profilename=profilename,discount=discount,taxamount=taxamount,baldue=baldue,recinvoiceno='1000',terms=terms,startdate=startdate,enddate=enddate,bname=bname,placosupply=placosupply,recinvoice_orderno=ordernumber,repeate_every=repeate_every,amtrecvd=amtrecvd,subtotal=subtotal,grandtotal=grandtotal,IGST=IGST,CGST=CGST,SGST=SGST,TCS=TCS,note=note,cid=cmp1,gsttype=gsttype)
+            baldue=request.POST.get('grandtotal',False)
+            cheque_no=request.POST.get("cheque_id")
+            upi_no=request.POST.get("upi_id")
+            bank_no=request.POST.get("bnk_id")
+            pay_method=request.POST.get("method")
+            paidoff = request.POST.get("advance")
+            balance = request.POST.get("balance")
+            shipping_charge = request.POST.get("ship")
+            adjust = request.POST.get("adj")
+            entity = request.POST.get("recinvoice")
+
+            rec = recinvoice(customername=cname,email=email,profilename=profilename,shipping_charge=shipping_charge,adjust=adjust,entity_type=entity,
+                             taxamount=taxamount,baldue=baldue,recinvoiceno=recinvoiceno,terms=terms,startdate=formatted_inv_date,enddate=formatted_due_date,
+                             bname=bname,placosupply=placosupply,recinvoice_orderno=ordernumber,repeate_every=repeate_every,
+                             amtrecvd=amtrecvd,subtotal=subtotal,grandtotal=grandtotal,IGST=IGST,CGST=CGST,SGST=SGST,note=note,cid=cmp1,
+                             pay_method=pay_method,cheque_no=cheque_no,upi_no=upi_no,bank_no=bank_no,paidoff=paidoff,balance=balance)
 
             if len(request.FILES) != 0:
                 rec.file=request.FILES['file'] 
             rec.save()
-            rec.recinvoiceno = int(rec.recinvoiceno) + rec.recinvoiceid
+
+            if 'Draft' in request.POST:
+                rec.status = "Draft"
+            if "Save" in request.POST:
+                rec.status = "Approved" 
             rec.save()
             
-            items = request.POST.getlist("items[]")
-            hsn = request.POST.getlist("hsn[]")
-            quantity = request.POST.getlist("quantity[]")
-            rate = request.POST.getlist("rate[]")
-            tax = request.POST.getlist("tax[]")
-            amount = request.POST.getlist("amount[]")
-            discount = request.POST.getlist("reduce[]")
+            product = tuple(request.POST.getlist("product[]"))
+            hsn = tuple(request.POST.getlist("hsn[]"))
+            quantity = tuple(request.POST.getlist("qty[]"))
+            rate = tuple(request.POST.getlist("price[]"))
+            if request.POST.get('placosupply') == cmp1.state:
+                tax =  tuple(request.POST.getlist("tax1[]"))
+            else:
+                tax =  tuple(request.POST.getlist("tax2[]"))
+            amount = tuple(request.POST.getlist("total[]"))
+            discount = tuple(request.POST.getlist("discount[]"))
 
             placosupply=request.POST['placosupply']
             if placosupply == cmp1.state:
-                CGST = float(request.POST['CGST'])
+                CGST = float(request.POST['cgst'])
                 accocgst = accounts1.objects.get(name='Output CGST', cid=cmp1)
                 accocgst.balance = round(float(accocgst.balance + CGST), 2)
                 accocgst.save()
-                SGST = float(request.POST['SGST'])
+                SGST = float(request.POST['sgst'])
                 accosgst = accounts1.objects.get(name='Output SGST', cid=cmp1)
                 accosgst.balance = round(float(accosgst.balance + SGST), 2)
                 accosgst.save()
             else:
-                IGST = float(request.POST['IGST'])
+                IGST = float(request.POST['igst'])
                 accoigst = accounts1.objects.get(
                 name='Output IGST', cid=cmp1)
                 accoigst.balance = round(float(accoigst.balance + IGST), 2)
@@ -42468,11 +42512,21 @@ def createrecinvoices(request):
             
             recid=recinvoice.objects.get(recinvoiceid=rec.recinvoiceid)
             recid.save()
-            if len(items)==len(hsn)==len(quantity)==len(rate)==len(tax)==len(amount)==len(discount):
-                mapped=zip(items,hsn,quantity,rate,tax,amount,discount)
+
+            all_inv = recinvoice.objects.all()
+            for inv in all_inv:
+                inv.tot_inv_no += 1
+                inv.save()
+            
+            last_inv = recinvoice.objects.last()
+            last_inv.tot_inv_no = last_inv.recinvoiceid
+            last_inv.save()
+
+            if len(product)==len(hsn)==len(quantity)==len(rate)==len(tax)==len(amount)==len(discount):
+                mapped=zip(product,hsn,quantity,rate,tax,amount,discount)
                 mapped=list(mapped)
                 for ele in mapped:
-                    recinvAdd,created = recinvoice_item.objects.get_or_create(items = ele[0],hsn = ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6],recinvoice=recid,cid=cmp1)
+                    recinvAdd,created = recinvoice_item.objects.get_or_create(product = ele[0],hsn = ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6],recinvoice=recid,cid=cmp1)
                     itemqty = itemtable.objects.get(name=ele[0],cid=cmp1)
                     if itemqty.stock != 0:
                         temp=0
@@ -42480,35 +42534,54 @@ def createrecinvoices(request):
                         temp = temp-int(ele[2])
                         itemqty.stock =temp
                         itemqty.save()
+
+        
+
             return redirect('gorecinvoices')
         return render(request,'app1/recinvoices.html',{'cmp1': cmp1})
     return redirect('gorecinvoices')     
 
 def createrecinvoices1(request,id):
     if request.method == 'POST':
+        original_inv_date = datetime.strptime(request.POST.get('invoicedate'), '%Y-%m-%d')
+        formatted_inv_date = original_inv_date.strftime('%Y-%m-%d')
+
+        original_due_date = datetime.strptime(request.POST.get('duedate'), '%d-%m-%Y')
+        formatted_due_date = original_due_date.strftime('%Y-%m-%d')       
+
         recinv = recinvoice.objects.get(recinvoiceid=id)
         cmp1 = company.objects.get(id=request.session['uid'])
         recinv.customername=str(request.POST.get('customername',False))
+        recinv.recinvoiceno=str(request.POST.get('rec_no',False))
+        recinv.email=str(request.POST.get('email',False))
         recinv.terms=str(request.POST.get('terms',False))
-        recinv.startdate=str(request.POST.get('startdate',False))
-        recinv.enddate=str(request.POST.get('enddate',False))
+        recinv.startdate=formatted_inv_date
+        recinv.enddate=formatted_due_date
         recinv.placosupply=request.POST['placosupply']
         recinv.profilename=str(request.POST.get('profname',False))
         recinv.recinvoice_orderno=str(request.POST.get('ordernum',False))
         recinv.repeate_every=str(request.POST.get('reptevery',False))
-        recinv.taxamount = request.POST['tax_amount']
-        recinv.discount = request.POST['discount']
+        recinv.taxamount = request.POST['taxamount']
         recinv.subtotal = request.POST['subtotal']
         recinv.grandtotal = request.POST['grandtotal']
         recinv.bname= str(request.POST.get('bname',False))
-        recinv.gsttype= str(request.POST.get('gsttype',False))
        # recinv.amtrecvd = request.POST['amtrecvd']
-        #recinv.baldue = request.POST['baldue']
-        
+        recinv.baldue = request.POST['grandtotal']
+        recinv.cheque_no=request.POST.get("cheque_id")
+        recinv.upi_no=request.POST.get("upi_id")
+        recinv.bank_no=request.POST.get("bnk_id")
+        recinv.pay_method=request.POST.get("method")
+        recinv.paidoff = request.POST.get("advance")
+        recinv.balance = request.POST.get("balance")
+        recinv.shipping_charge = request.POST.get("ship")
+        recinv.adjust = request.POST.get("adj")
+        recinv.entity_type = request.POST.get("recinvoice")
+
+
         recinv.note = request.POST['Note']
-        recinv.IGST = request.POST['IGST']
-        recinv.CGST = request.POST['CGST']
-        recinv.SGST = request.POST['SGST']
+        recinv.IGST = request.POST['igst']
+        recinv.CGST = request.POST['cgst']
+        recinv.SGST = request.POST['sgst']
         # recinv.TCS = request.POST['TCS']
 
         if len(request.FILES) != 0:
@@ -42522,39 +42595,57 @@ def createrecinvoices1(request,id):
         if len(request.FILES) != 0:
             recinv.file=request.FILES['file'] 
         recinv.save()
-        recinv.recinvoiceno = int(recinv.recinvoiceno) + recinv.recinvoiceid
-        recinv.save()
 
-        items = request.POST.getlist("product[]")
-        hsn = request.POST.getlist("hsn[]")
-        qty = request.POST.getlist("quantity[]")
-        price = request.POST.getlist("price[]")
-        tax = request.POST.getlist("tax[]")
-        total = request.POST.getlist("total[]")
-        discount = request.POST.getlist("reduce[]")
-        
-        
-        recid=recinvoice.objects.get(recinvoiceid=recinv.recinvoiceid)
-        recid.save()
-        count = recinvoice_item.objects.filter(recinvoice=recinv.recinvoiceid).count()
-        if len(items)==len(hsn)==len(qty)==len(price)==len(tax)==len(total)==len(discount):
+        product = tuple(request.POST.getlist("product[]"))
+        hsn = tuple(request.POST.getlist("hsn[]"))
+        qty = tuple(request.POST.getlist("qty[]"))
+        price = tuple(request.POST.getlist("price[]"))
+        if request.POST.get('placosupply') == cmp1.state:
+            tax =  tuple(request.POST.getlist("tax1[]"))
+        else:
+            tax =  tuple(request.POST.getlist("tax2[]"))
+        total = tuple(request.POST.getlist("total[]"))
+        discount = tuple(request.POST.getlist("discount[]"))
+
+
+        itemid = request.POST.getlist("id[]")
+        item_ids = [int(id) for id in itemid]
+
+        rinv= recinvoice.objects.get(recinvoiceid =recinv.recinvoiceid)
+        rinv_item = recinvoice_item.objects.filter(recinvoice=rinv)
+        object_ids = [obj.id for obj in rinv_item]
+        ids_to_delete = [obj_id for obj_id in object_ids if obj_id not in item_ids]
+
+        recinvoice_item.objects.filter(id__in=ids_to_delete).delete()
+ 
+        count = recinvoice_item.objects.filter(recinvoice=rinv).count()
+        if len(product)==len(hsn)==len(discount)==len(qty)==len(price)==len(tax)==len(total):
             try:
-                mapped=zip(items,hsn,qty,price,tax,total,discount)
+                mapped=zip(product,hsn,qty,price,tax,discount,total,item_ids)
                 mapped=list(mapped)
 
                 for ele in mapped:
-                    if int(len(items))>int(count):
-                        recinvAdd,created = recinvoice_item.objects.get_or_create(items = ele[0],hsn = ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6],recinvoice=recid,cid=cmp1)
+                    if int(len(product))>int(count):
+                        if ele[7] == 0:
+                            recinvAdd = recinvoice_item.objects.create(product = ele[0],hsn=ele[1],qty=ele[2],
+                            price=ele[3],tax=ele[4],discount=ele[5],total=ele[6],recinvoice=rinv,cid=cmp1)
+
+                        else:
+                            created = recinvoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
+                            price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
                     else:
-                        created = recinvoice_item.objects.filter(cid=cmp1).update(items = ele[0],hsn = ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6])
-
+                        created = recinvoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
+                        price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
+                        
             except:
-                    mapped=zip(items,hsn,qty,price,tax,total,discount)
+                    mapped=zip(product,hsn,qty,price,tax,total,item_ids)
                     mapped=list(mapped)
-
+                    
                     for ele in mapped:
-                        dbs=recinvoice_item.objects.get(id=ele[6],cid=cmp1.cid)
-                        recinvAdd,created = recinvoice_item.objects.filter(id=ele[6],cid=cmp1).update(items = ele[0],hsn = ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6])
+                        dbs=recinvoice_item.objects.get(id=ele[7],cid=cmp1.cid)
+                        
+                        created = recinvoice_item.objects.filter(id=ele[7],cid=cmp1).update(product = ele[0],hsn=ele[1],qty=ele[2],
+                        price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
                         itemqty = itemtable.objects.get(name=ele[0],cid=cmp1)
                         if itemqty.stock != 0:
                             temp=0
@@ -42564,28 +42655,26 @@ def createrecinvoices1(request,id):
                             itemqty.save()
        
                 
-        recitem = recinvoice_item.objects.filter(recinvoice=recinv.recinvoiceid)
         return redirect('recinvoice_view',id)
     return render(request,'app1/recinvoice_view.html')
 
 
 @login_required(login_url='regcomp')
 def recinvoice_view(request,id):
-
     cmp1 = company.objects.get(id=request.session['uid'])
     upd = recinvoice.objects.get(recinvoiceid=id, cid=cmp1)
-
     recinvitem = recinvoice_item.objects.filter(recinvoice=id)
-
-    total = upd.grandtotal
-    words_total = num2words(total)
+    cust = customer.objects.get(customerid = upd.customername.split(" ")[0])
+    dis = 0
+    for i in recinvitem:
+        dis += int(i.discount)
 
     context ={
         'recinvoice':upd,
         'cmp1':cmp1,
-        'words_total':words_total,
         'recinvitem':recinvitem,
-
+        'cust' : cust,
+        'dis':dis
     }
     return render(request,'app1/recinvoice_view.html',context)
 
@@ -42757,19 +42846,26 @@ def recinvoice_add_file(request,id):
 
 @login_required(login_url='regcomp')
 def editrecinvoice(request, id):
-        cmp1 = company.objects.get(id=request.session['uid'])
-        recinvo3 = recinvoice.objects.get(recinvoiceid=id, cid=cmp1)
-        inv = inventory.objects.filter(cid=cmp1).all()
-        bun = bundle.objects.filter(cid=cmp1).all()
-        cust = customer.objects.filter(cid=cmp1)
-        noninv = noninventory.objects.filter(cid=cmp1).all()
-        ser = service.objects.filter(cid=cmp1).all()
-        item = itemtable.objects.filter(cid=cmp1).all()
-        recinvitem = recinvoice_item.objects.filter(recinvoice =id )
-        rterm = recterm.objects.filter(cid=cmp1)
-        rpt = repeatevry.objects.filter(cid=cmp1)
-        context = {'rterm' : rterm,  'rpt' : rpt, 'recinvoice': recinvo3, 'cmp1': cmp1, 'inv': inv, 'item':item,'recinvitem':recinvitem,'noninv': noninv, 'bun': bun, 'ser': ser, 'cust' : cust}
-        return render(request, 'app1/editrecinvoice.html', context)
+    cmp1 = company.objects.get(id=request.session['uid'])
+    recinvo3 = recinvoice.objects.get(recinvoiceid=id, cid=cmp1)
+    customers = customer.objects.filter(cid=cmp1).all()
+    cust = customer.objects.get(customerid = recinvo3.customername.split(" ")[0])
+    item = itemtable.objects.filter(cid=cmp1).all()
+    recinvitem = recinvoice_item.objects.filter(recinvoice =id )
+    rpt = repeatevry.objects.filter(cid=cmp1)
+    acc  = accounts1.objects.filter(acctype='Cost of Goods Sold',cid=cmp1)
+    acc1  = accounts1.objects.filter(acctype='Sales',cid=cmp1)
+    bank = bankings_G.objects.filter(cid=cmp1)
+    terms  = PaymentTerms.objects.filter(cid=cmp1)
+
+    inv_list = ''
+    inv_ord = recinvoice.objects.all()
+    for s in inv_ord:
+        inv_list = s.recinvoiceno+ ',' + inv_list
+
+    context = {'terms' : terms,  'rpt' : rpt, 'recinvoice': recinvo3, 'cmp1': cmp1, 'item':item,'customers':customers,
+                'recinvitem':recinvitem, 'cust' : cust,'acc':acc,'acc1':acc1,'bank':bank,'inv_list':inv_list}
+    return render(request, 'app1/editrecinvoice.html', context)
 
 def recurinv_pay(request):
     cmp1 = company.objects.get(id=request.session['uid'])
@@ -42947,22 +43043,22 @@ def goewaybill1(request):
 @login_required(login_url='regcomp')
 def recinvoice_status(request,id):
     cmp1 = company.objects.get(id=request.session['uid'])
-    recinoi = recinvoice.objects.get(recinvoiceid=id, cid=cmp1)
-
-    recinoi.status = 'Approved'
-    recinoi.save()
+    rec = recinvoice.objects.get(recinvoiceid=id, cid=cmp1)
+    print(rec)
+    rec.status = 'Approved'
+    rec.save()
 
     statment = cust_statment()
-    statment.customer =recinoi.customername 
+    statment.customer =rec.customername 
 
     statment.cid = cmp1
-    statment.recinv =recinoi
+    statment.recinv =rec
     
     
-    statment.Date = recinoi.startdate
+    statment.Date = rec.startdate
     statment.Transactions = "Invoice"
     
-    statment.Amount = recinoi.grandtotal
+    statment.Amount = rec.grandtotal
     statment.save()
 
     return redirect(recinvoice_view,id)
@@ -48133,6 +48229,7 @@ def stockdata(request):
     return JsonResponse({'stock':stock})
     
 def convert_to_inv(request,pk):
+    cmp1 = company.objects.get(id=request.session['uid'])
     sale = salesorder.objects.get(id=pk)
 
 
@@ -48141,12 +48238,52 @@ def convert_to_inv(request,pk):
     else:
         amt = 0
 
+    sel = invoice.objects.filter(cid=cmp1).last()
+
+    if sel:
+            inv_no = str(sel.invoiceno)
+            numbers = []
+            stri = []
+            for word in inv_no:
+                if word.isdigit():
+                    numbers.append(word)
+                else:
+                    stri.append(word)
+            
+            num=''
+            for i in numbers:
+                num +=i
+            
+            st = ''
+            for j in stri:
+                st = st+j
+
+            inv_no = int(num)+1
+
+            if num[0] == '0':
+                if inv_no <10:
+                    inv_no = st+'0'+ str(inv_no)
+                else:
+                    inv_no = st+ str(inv_no)
+            else:
+                inv_no = st+ str(inv_no)
+    
+    sel_no = int(sel.tot_inv_no) +1
+
+    bankno = None
+    if (sale.pay_method).upper() != 'CASH': 
+        if (sale.pay_method).upper() != 'CHEQUE':
+            if (sale.pay_method).upper() != 'UPI':
+                bank_no = bankings_G.objects.get(bankname=sale.pay_method, cid=cmp1)
+                bankno = bank_no.account_number
+                
+
     inv = invoice(customername=sale.salename, email=sale.saleemail,
-        invoiceno=sale.saleno,
+        invoiceno=inv_no,invoice_orderno = sale.saleno,
         invoicedate=sale.saledate,
         terms=sale.term_days, duedate=sale.shipmentdate, bname=sale.saleaddress,
         placosupply=sale.placeofsupply,
-        cid=sale.cid,
+        cid=sale.cid,tot_inv_no = sel_no,
         subtotal=float(sale.subtotal),
         note = sale.note,
         IGST = sale.IGST,
@@ -48157,7 +48294,14 @@ def convert_to_inv(request,pk):
         taxamount = sale.taxamount,
         grandtotal=sale.salestotal,
         amtrecvd=amt, 
-        baldue=sale.balance)
+        baldue=sale.salestotal,
+        pay_method = sale.pay_method,
+        cheque_no = sale.cheque_no,
+        upi_no = sale.upi_no,
+        bank_no =bankno,
+        paidoff=sale.paidoff,
+        balance=sale.balance
+        )
     inv.save()
 
     inv_id = invoice.objects.last()
@@ -48174,26 +48318,54 @@ def convert_to_inv(request,pk):
     
     
 def convert_to_reccinv(request,pk):
+    cmp1 = company.objects.get(id=request.session['uid'])
     sale = salesorder.objects.get(id=pk)
-    salename = sale.salename.split(" ")[1:]
-    name = ' '.join(salename)
-    cust = customer.objects.get(customerid=sale.salename[0])
 
-    rec_inv = recinvoice.objects.last()
-    if rec_inv == None:
-        ord_no = 1
-    else:
-        ord_no = rec_inv.recinvoiceid+1
+    rec_inv = recinvoice.objects.filter(cid=cmp1).last()
 
-    if sale.paidoff:
-        amt=float(sale.paidoff)
-    else:
-        amt = 0
+    if rec_inv:
+            rinv_no = str(rec_inv.recinvoiceno)
+            numbers = []
+            stri = []
+            for word in rinv_no:
+                if word.isdigit():
+                    numbers.append(word)
+                else:
+                    stri.append(word)
+            
+            num=''
+            for i in numbers:
+                num +=i
+            
+            st = ''
+            for j in stri:
+                st = st+j
 
-    rec = recinvoice(customername=name, email=sale.saleemail, profilename=name, taxamount=float(sale.taxamount),
-                    baldue=sale.balance, recinvoiceno=sale.saleno, terms=sale.term_days, startdate=sale.saledate, enddate=sale.shipmentdate, bname=sale.saleaddress,
-                    placosupply=sale.placeofsupply, amtrecvd=amt, subtotal=float(sale.subtotal), recinvoice_orderno = ord_no,
-                    grandtotal=sale.salestotal, IGST=sale.IGST, CGST=sale.CGST, SGST=sale.SGST, note=sale.note, cid=sale.cid, gsttype=cust.gsttype)
+            rinv_no = int(num)+1
+
+            if num[0] == '0':
+                if rinv_no <10:
+                    rinv_no = st+'0'+ str(rinv_no)
+                else:
+                    rinv_no = st+ str(rinv_no)
+            else:
+                rinv_no = st+ str(rinv_no)
+    
+    sel_no = int(rec_inv.tot_inv_no) +1
+
+    bankno = None
+    if (sale.pay_method).upper() != 'CASH': 
+        if (sale.pay_method).upper() != 'CHEQUE':
+            if (sale.pay_method).upper() != 'UPI':
+                bank_no = bankings_G.objects.get(bankname=sale.pay_method, cid=cmp1)
+                bankno = bank_no.account_number
+                
+
+    rec = recinvoice(customername=sale.salename, email=sale.saleemail, taxamount=float(sale.taxamount),pay_method = sale.pay_method,
+                    cheque_no = sale.cheque_no,upi_no = sale.upi_no,bank_no =bankno,paidoff=sale.paidoff,balance=sale.balance,tot_inv_no = sel_no,
+                    baldue=sale.salestotal, recinvoiceno=rinv_no, terms=sale.term_days, startdate=sale.saledate, enddate=sale.shipmentdate, bname=sale.saleaddress,
+                    placosupply=sale.placeofsupply, subtotal=float(sale.subtotal), recinvoice_orderno = sale.saleno,
+                    grandtotal=sale.salestotal, IGST=sale.IGST, CGST=sale.CGST, SGST=sale.SGST, note=sale.note, cid=sale.cid,)
 
     rec.save()
     
