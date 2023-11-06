@@ -3772,44 +3772,44 @@ def invcreate2(request):
         # bs7.payments = inv2.TCS
         bs7.save()
 
-        grandtotal = float(request.POST.get('grandtotal'))
-        acc = accounts1.objects.get(
-            name='Account Receivable(Debtors)', cid=cmp1)
-        if grandtotal != 0:
-            if accounts1.objects.get(name='Account Receivable(Debtors)', cid=cmp1):
-                acc.balance = float(acc.balance - grandtotal)
-                acc.save()
-            else:
-                pass
-        else:
-            pass
-        try:
-            if accounts1.objects.get(name='Sales', cid=cmp1):
-                acc = accounts1.objects.get(name='Sales', cid=cmp1)
-                acc.balance = float(acc.balance - grandtotal)
-                acc.save()
-        except:
-            pass
 
-        placosupply=request.POST.get('placosupply')
-        if placosupply == cmp1.state:
-            CGST = 0 if request.POST.get('CGST') is None else float(request.POST.get('CGST'))
-            accocgst = accounts1.objects.get(
-                name='Output CGST', cid=cmp1)
-            accocgst.balance = round(float(accocgst.balance + CGST), 2)
-            accocgst.save()
-            SGST = 0 if request.POST.get('SGST') is None else float(request.POST.get('SGST'))
-            accosgst = accounts1.objects.get(
-                name='Output SGST', cid=cmp1)
-            accosgst.balance = round(float(accosgst.balance + SGST), 2)
-            accosgst.save()
-        else:
-            IGST = 0 if request.POST.get('IGST') is None else float(request.POST.get('IGST'))
-            accoigst = accounts1.objects.get(
-                name='Output IGST', cid=cmp1)
-            accoigst.balance = round(
-                float(accoigst.balance + IGST), 2)
-            accoigst.save()
+        # acc = accounts1.objects.get(
+        #     name='Account Receivable(Debtors)', cid=cmp1)
+        # if grandtotal != 0:
+        #     if accounts1.objects.get(name='Account Receivable(Debtors)', cid=cmp1):
+        #         acc.balance = float(acc.balance - grandtotal)
+        #         acc.save()
+        #     else:
+        #         pass
+        # else:
+        #     pass
+        # try:
+        #     if accounts1.objects.get(name='Sales', cid=cmp1):
+        #         acc = accounts1.objects.get(name='Sales', cid=cmp1)
+        #         acc.balance = float(acc.balance - grandtotal)
+        #         acc.save()
+        # except:
+        #     pass
+
+        # placosupply=request.POST.get('placosupply')
+        # if placosupply == cmp1.state:
+        #     CGST = 0 if request.POST.get('CGST') is None else float(request.POST.get('CGST'))
+        #     accocgst = accounts1.objects.get(
+        #         name='Output CGST', cid=cmp1)
+        #     accocgst.balance = round(float(accocgst.balance + CGST), 2)
+        #     accocgst.save()
+        #     SGST = 0 if request.POST.get('SGST') is None else float(request.POST.get('SGST'))
+        #     accosgst = accounts1.objects.get(
+        #         name='Output SGST', cid=cmp1)
+        #     accosgst.balance = round(float(accosgst.balance + SGST), 2)
+        #     accosgst.save()
+        # else:
+        #     IGST = 0 if request.POST.get('IGST') is None else float(request.POST.get('IGST'))
+        #     accoigst = accounts1.objects.get(
+        #         name='Output IGST', cid=cmp1)
+        #     accoigst.balance = round(
+        #         float(accoigst.balance + IGST), 2)
+        #     accoigst.save()
 
         # TCS = float(request.POST['TCS'])
         # accont = accounts1.objects.get(
@@ -3873,10 +3873,8 @@ def invcreate2(request):
                     itemqty.stockout =temp
                     itemqty.save()
 
-        all_inv = invoice.objects.all()
-        for inv in all_inv:
-            inv.tot_inv_no += 1
-            inv.save()
+
+        invoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
         
         last_inv = invoice.objects.last()
         last_inv.tot_inv_no = last_inv.invoiceid
@@ -34035,9 +34033,7 @@ def itemdata(request):
             return redirect('/')
         cmp1 = company.objects.get(id=request.session['uid'])
         id = request.GET.get('id')
-        toda = date.today()
-        tod = toda.strftime("%Y-%m-%d")
-        # to = toda.strftime("%d-%m-%Y")
+
         item = itemtable.objects.get(name=id,cid=cmp1)
         hsn = item.hsn
         qty = item.stock
@@ -34045,7 +34041,24 @@ def itemdata(request):
         gst = item.intra_st
         sgst = item.inter_st
         places=cmp1.state
+        return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst})
+    
+def itemdetails(request):
+    if 'uid' in request.session:
+        if request.session.has_key('uid'):
+            uid = request.session['uid']
+        else:
+            return redirect('/')
+        cmp1 = company.objects.get(id=request.session['uid'])
+        id = request.GET.get('id')
 
+        item = itemtable.objects.get(name=id,cid=cmp1)
+        hsn = item.hsn
+        qty = item.stock
+        price = item.sales_cost
+        gst = item.intra_st
+        sgst = item.inter_st
+        places=cmp1.state
         return JsonResponse({"status":" not",'hsn':hsn,'qty':qty,'places':places,'price':price,'gst':gst,'sgst':sgst})
     return redirect('/')
 
@@ -42423,6 +42436,8 @@ def addrecinvoices1(request):
     return render(request,'app1/addrecinvoices4.html',context)
 
 
+from django.db.models import F
+
 def createrecinvoices(request):
     if 'uid' in request.session:
         if request.session.has_key('uid'):
@@ -42480,7 +42495,15 @@ def createrecinvoices(request):
                 rec.status = "Draft"
             if "Save" in request.POST:
                 rec.status = "Approved" 
+
             rec.save()
+
+            recinvoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
+
+            
+            last_inv = recinvoice.objects.last()
+            last_inv.tot_inv_no = last_inv.recinvoiceid
+            last_inv.save()
             
             product = tuple(request.POST.getlist("product[]"))
             hsn = tuple(request.POST.getlist("hsn[]"))
@@ -42493,40 +42516,29 @@ def createrecinvoices(request):
             amount = tuple(request.POST.getlist("total[]"))
             discount = tuple(request.POST.getlist("discount[]"))
 
-            placosupply=request.POST['placosupply']
-            if placosupply == cmp1.state:
-                CGST = float(request.POST['cgst'])
-                accocgst = accounts1.objects.get(name='Output CGST', cid=cmp1)
-                accocgst.balance = round(float(accocgst.balance + CGST), 2)
-                accocgst.save()
-                SGST = float(request.POST['sgst'])
-                accosgst = accounts1.objects.get(name='Output SGST', cid=cmp1)
-                accosgst.balance = round(float(accosgst.balance + SGST), 2)
-                accosgst.save()
-            else:
-                IGST = float(request.POST['igst'])
-                accoigst = accounts1.objects.get(
-                name='Output IGST', cid=cmp1)
-                accoigst.balance = round(float(accoigst.balance + IGST), 2)
-                accoigst.save()
-            
-            recid=recinvoice.objects.get(recinvoiceid=rec.recinvoiceid)
-            recid.save()
+            # placosupply=request.POST['placosupply']
+            # if placosupply == cmp1.state:
+            #     CGST = float(request.POST['cgst'])
+            #     accocgst = accounts1.objects.get(name='Output CGST', cid=cmp1)
+            #     accocgst.balance = round(float(accocgst.balance + CGST), 2)
+            #     accocgst.save()
+            #     SGST = float(request.POST['sgst'])
+            #     accosgst = accounts1.objects.get(name='Output SGST', cid=cmp1)
+            #     accosgst.balance = round(float(accosgst.balance + SGST), 2)
+            #     accosgst.save()
+            # else:
+            #     IGST = float(request.POST['igst'])
+            #     accoigst = accounts1.objects.get(
+            #     name='Output IGST', cid=cmp1)
+            #     accoigst.balance = round(float(accoigst.balance + IGST), 2)
+            #     accoigst.save()
 
-            all_inv = recinvoice.objects.all()
-            for inv in all_inv:
-                inv.tot_inv_no += 1
-                inv.save()
-            
-            last_inv = recinvoice.objects.last()
-            last_inv.tot_inv_no = last_inv.recinvoiceid
-            last_inv.save()
 
             if len(product)==len(hsn)==len(quantity)==len(rate)==len(tax)==len(amount)==len(discount):
                 mapped=zip(product,hsn,quantity,rate,tax,amount,discount)
                 mapped=list(mapped)
                 for ele in mapped:
-                    recinvAdd,created = recinvoice_item.objects.get_or_create(product = ele[0],hsn = ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6],recinvoice=recid,cid=cmp1)
+                    recinvAdd,created = recinvoice_item.objects.get_or_create(product=ele[0],hsn=ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6],recinvoice=rec,cid=cmp1)
                     itemqty = itemtable.objects.get(name=ele[0],cid=cmp1)
                     if itemqty.stock != 0:
                         temp=0
@@ -48268,7 +48280,6 @@ def convert_to_inv(request,pk):
             else:
                 inv_no = st+ str(inv_no)
     
-    sel_no = int(sel.tot_inv_no) +1
 
     bankno = None
     if (sale.pay_method).upper() != 'CASH': 
@@ -48283,7 +48294,7 @@ def convert_to_inv(request,pk):
         invoicedate=sale.saledate,
         terms=sale.term_days, duedate=sale.shipmentdate, bname=sale.saleaddress,
         placosupply=sale.placeofsupply,
-        cid=sale.cid,tot_inv_no = sel_no,
+        cid=sale.cid,
         subtotal=float(sale.subtotal),
         note = sale.note,
         IGST = sale.IGST,
@@ -48311,6 +48322,10 @@ def convert_to_inv(request,pk):
         inv_itm = invoice_item(invoice=inv_id, hsn=item.hsn ,qty =item.qty ,price =item.price ,total =item.total ,
                                cid=item.cid, product =item.product , tax= item.tax ,discount =item.discount )
         inv_itm.save()
+
+    invoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
+    inv.tot_inv_no = int(inv.invoiceid)
+    inv.save()
 
     sale.inv_status = 1
     sale.save()
@@ -48351,7 +48366,7 @@ def convert_to_reccinv(request,pk):
             else:
                 rinv_no = st+ str(rinv_no)
     
-    sel_no = int(rec_inv.tot_inv_no) +1
+    
 
     bankno = None
     if (sale.pay_method).upper() != 'CASH': 
@@ -48362,7 +48377,7 @@ def convert_to_reccinv(request,pk):
                 
 
     rec = recinvoice(customername=sale.salename, email=sale.saleemail, taxamount=float(sale.taxamount),pay_method = sale.pay_method,
-                    cheque_no = sale.cheque_no,upi_no = sale.upi_no,bank_no =bankno,paidoff=sale.paidoff,balance=sale.balance,tot_inv_no = sel_no,
+                    cheque_no = sale.cheque_no,upi_no = sale.upi_no,bank_no =bankno,paidoff=sale.paidoff,balance=sale.balance,
                     baldue=sale.salestotal, recinvoiceno=rinv_no, terms=sale.term_days, startdate=sale.saledate, enddate=sale.shipmentdate, bname=sale.saleaddress,
                     placosupply=sale.placeofsupply, subtotal=float(sale.subtotal), recinvoice_orderno = sale.saleno,
                     grandtotal=sale.salestotal, IGST=sale.IGST, CGST=sale.CGST, SGST=sale.SGST, note=sale.note, cid=sale.cid,)
@@ -48378,6 +48393,10 @@ def convert_to_reccinv(request,pk):
 
     sale.salcrd_status = 1
     sale.save()
+
+    recinvoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
+    rec.tot_inv_no = int(rec.recinvoiceid)
+    rec.save()
 
     return redirect('gosalesorder')
     

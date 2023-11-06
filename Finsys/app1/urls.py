@@ -1040,6 +1040,7 @@ urlpatterns = [
     path('addrecinvoices1',views.addrecinvoices1,name='addrecinvoices1'),
     path('recinvoice_view/<int:id>',views.recinvoice_view,name='recinvoice_view'),
    	path('itemdata1',views.itemdata1,name='itemdata1'),
+   	path('itemdetails',views.itemdetails,name='itemdetails'),
     path('reccreatecustomer1',views.reccreatecustomer1,name='reccreatecustomer1'),
     path('createrec_item1',views.createrec_item1,name='createrec_item1'),
     # path(' itemdata_recur',views. itemdata_recur,name='itemdata_recur'),

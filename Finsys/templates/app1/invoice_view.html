@@ -497,12 +497,18 @@ footer p {
                                 <div class="col-md-3 mt-3 vr">
                                     <p class="mb-0">{{invoice.bname}}</p>
                                 </div>
+                                {%if invoice.invoice_orderno %}
                                 <div class="col-md-3 mt-3 vl"> 
                                     <h6 class="mb-0">Order No</h6>
                                 </div>
                                 <div class="col-md-3 mt-3">
                                     <p class="mb-0 text-right">{{invoice.invoice_orderno}}</p>
                                 </div>
+                                {% else %}
+                                <div class="col-md-6 mt-3 vl">
+                                    <p class="mb-0 text-right">&nbsp;</p>
+                                </div>
+                                {% endif %}
                             </div>
                             <hr>
                             <div class="row mb-4 d-flex justify-content-between align-items-center">
@@ -634,8 +640,10 @@ footer p {
                                         <p>Invoice</p>
                                     </div>
                                     <div class="position-relative">
-                                        <p>Invoice No. <span>{{ invoice.invoiceno }}</span></p>
+                                        <p> Invoice No. <span>{{ invoice.invoiceno }}</span></p>
+                                        {%if invoice.invoice_orderno %}
                                         <p>Order No. <span>{{ invoice.invoice_orderno }}</span></p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </section>
@@ -820,7 +828,9 @@ footer p {
                               <div class="col-md-4 d-flex justify-content-end">
                                   <div class="text-white">
                                       <p class="mb-0 mt-2">Invoice No: <b>{{invoice.invoiceno }}</b></p>
+                                      {%if invoice.invoice_orderno %}
                                       <p class="mb-0 mt-2">Order No: <b>{{invoice.invoice_orderno }}</b></p>
+                                      {% endif %}
                                   </div>
                                   <!-- <div class="mt-2">
                                       <p style="color: #000;">Date : <b>{{ ewbill.bill_date | date:'d-m-Y' }}</b></p>
@@ -1020,11 +1030,13 @@ footer p {
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{ invoice.invoiceno }}</td>
                                                 </tr>
+                                                {%if invoice.invoice_orderno %}
                                                 <tr >
                                                     <td style="color: #000; font-weight: bold;">Order No</td>
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{ invoice.invoice_orderno }}</td>
                                                 </tr>
+                                                {% endif %}
                                                 
                                                 <tr >
                                                     <td style="color: #000; font-weight: bold;">Invoice Date</td>
@@ -1174,10 +1186,12 @@ footer p {
                                         <div class="col-md-6 text-left">Invoice No:</div>
                                         <div class="col-md-5 text-right">{{invoice.invoiceno}}</div>
                                     </div>
+                                    {% if invoice.invoice_orderno  %}
                                     <div class="row">
                                         <div class="col-md-6 text-left">Order No:</div>
                                         <div class="col-md-5 text-right">{{invoice.invoice_orderno}}</div>
                                     </div>
+                                    {% endif %}
                                     <div class="row">
                                         <div class="col-md-6 text-left">Customer Name:</div>
                                         <div class="col-md-5 text-right">{{cust.firstname}} {{cust.lastname}}</div>

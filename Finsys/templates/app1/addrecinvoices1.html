@@ -2155,7 +2155,7 @@ function reloadItem() {
                 
                 var n = $(this).attr("id").slice(7);
                 $.ajax({
-                url: "{% url 'itemdata' %}",
+                url: "{% url 'itemdetails' %}",
                 type : 'GET',
                 data:{
                     id : $(this).val(),

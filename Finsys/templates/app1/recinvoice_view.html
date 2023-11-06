@@ -477,12 +477,26 @@ footer p {
                             </div>
                             <div class="row mb-4 d-flex justify-content-between align-items-center">
                                 <div class="col-md-3 mt-3">
-                                    <h6 class="mb-0">Order No</h6>
+                                    <h6 class="mb-0">Recurring Invoice Date</h6>
                                 </div>
                                 <div class="col-md-3 mt-3">
-                                    <p class="mb-0 text-right">{{recinvoice.recinvoice_orderno}}</p>
+                                    <p class="mb-0 text-right">{{recinvoice.startdate | date:'d-m-Y'}}</p>
                                 </div>
 
+                                <div class="col-md-3 mt-3 vl">
+                                    <h6 class="mb-0">Shipment Date</h6>
+                                </div>
+                                <div class="col-md-3 mt-3">
+                                    <p class="mb-0 text-right">{{recinvoice.enddate | date:'d-m-Y'}}</p>
+                                </div>
+                            </div>
+                            <div class="row mb-4 d-flex justify-content-start align-items-center">
+                                <div class="col-md-3 mt-3"> 
+                                    <h6 class="mb-0">Address</h6>
+                                </div>
+                                <div class="col-md-3 mt-3 vr">
+                                    <p class="mb-0">{{recinvoice.bname}}</p>
+                                </div>
                                 <div class="col-md-3 mt-3 vl">
                                     <h6 class="mb-0">Repeat Every</h6>
                                 </div>
@@ -504,32 +518,16 @@ footer p {
                                 </div>
                                 {% endif %}
                             </div>
+                            {% if recinvoice.recinvoice_orderno %}
                             <div class="row mb-4 d-flex justify-content-between align-items-center">
                                 <div class="col-md-3 mt-3">
-                                    <h6 class="mb-0">Recurring Invoice Date</h6>
+                                    <h6 class="mb-0">Order No</h6>
                                 </div>
                                 <div class="col-md-3 mt-3">
-                                    <p class="mb-0 text-right">{{recinvoice.startdate | date:'d-m-Y'}}</p>
-                                </div>
-
-                                <div class="col-md-3 mt-3 vl">
-                                    <h6 class="mb-0">Shipment Date</h6>
-                                </div>
-                                <div class="col-md-3 mt-3">
-                                    <p class="mb-0 text-right">{{recinvoice.enddate | date:'d-m-Y'}}</p>
+                                    <p class="mb-0 text-right">{{recinvoice.recinvoice_orderno}}</p>
                                 </div>
                             </div>
-                            <div class="row mb-4 d-flex justify-content-start align-items-center">
-                                <div class="col-md-3 mt-3"> 
-                                    <h6 class="mb-0">Address</h6>
-                                </div>
-                                <div class="col-md-3 mt-3 vr">
-                                    <p class="mb-0">{{recinvoice.bname}}</p>
-                                </div>
-                                <div class="col-md-6 mt-3 vl">
-                                    <h6 class="mb-0">&nbsp;</h6>
-                                </div>
-                            </div>
+                            {% endif %}
                             <hr>
                             <div class="row mb-4 d-flex justify-content-between align-items-center">
                                 <div class="col-md-12 mt-3">
@@ -665,7 +663,9 @@ footer p {
                                     </div>
                                     <div class="position-relative">
                                         <p>Recurring Invoice No. <span>{{ recinvoice.recinvoiceno }}</span></p>
+                                        {% if recinvoice.recinvoice_orderno %}
                                         <p>Order No. <span>{{ recinvoice.recinvoice_orderno }}</span></p>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </section>
@@ -850,7 +850,9 @@ footer p {
                               <div class="col-md-4 d-flex justify-content-end">
                                   <div class="text-white">
                                       <p class="mb-0 mt-2">Recurring Invoice No: <b>{{recinvoice.recinvoiceno }}</b></p>
+                                      {% if recinvoice.recinvoice_orderno %}
                                       <p class="mb-0 mt-2">Order No: <b>{{recinvoice.recinvoice_orderno }}</b></p>
+                                      {% endif %}
                                   </div>
                                   <!-- <div class="mt-2">
                                       <p style="color: #000;">Date : <b>{{ ewbill.bill_date | date:'d-m-Y' }}</b></p>
@@ -1049,12 +1051,13 @@ footer p {
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{ recinvoice.recinvoiceno }}</td>
                                                 </tr>
+                                                {% if recinvoice.recinvoice_orderno %}
                                                 <tr >
                                                     <td style="color: #000; font-weight: bold;">Order No</td>
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{ recinvoice.recinvoice_orderno }}</td>
                                                 </tr>
-                                                
+                                                {% endif %}
                                                 <tr >
                                                     <td style="color: #000; font-weight: bold;">Invoice Date</td>
                                                     <td style="color: #000;">:</td>
@@ -1203,10 +1206,12 @@ footer p {
                                         <div class="col-md-6 text-left">Recurring Invoice No:</div>
                                         <div class="col-md-5 text-right">{{recinvoice.recinvoiceno}}</div>
                                     </div>
+                                    {% if recinvoice.recinvoice_orderno %}
                                     <div class="row">
                                         <div class="col-md-6 text-left">Order No:</div>
                                         <div class="col-md-5 text-right">{{recinvoice.recinvoice_orderno}}</div>
                                     </div>
+                                    {% endif %}
                                     <div class="row">
                                         <div class="col-md-6 text-left">Customer Name:</div>
                                         <div class="col-md-5 text-right">{{cust.firstname}} {{cust.lastname}}</div>
