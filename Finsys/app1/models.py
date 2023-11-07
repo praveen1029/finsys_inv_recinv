@@ -82,6 +82,8 @@ class customer(models.Model):
         db_table = "customer"
 
 
+
+
 class supplier(models.Model):
     supplierid = models.AutoField(('SUPPLIERID'), primary_key=True)
     cid = models.ForeignKey(company, on_delete=models.CASCADE)
@@ -2076,8 +2078,8 @@ class recinvoice(models.Model):
     profilename = models.CharField(max_length=100)
     recinvoiceno = models.CharField(max_length=100)
     terms = models.CharField(max_length=100, default='')
-    startdate = models.DateField( default='',null=True,blank=True)
-    enddate = models.DateField( default='',null=True,blank=True)
+    startdate = models.DateField(null=True,blank=True)
+    enddate = models.DateField(null=True,blank=True)
     bname = models.CharField(max_length=255, default='')
     placosupply = models.CharField(max_length=100, default='')
     repeate_every=models.CharField(max_length=100, default=0)

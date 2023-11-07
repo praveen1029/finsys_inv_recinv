@@ -3687,6 +3687,71 @@ def invcreate2(request):
             inv2.status = "Approved" 
         inv2.save()
 
+        
+        product = tuple(request.POST.getlist("product[]"))
+        hsn  =  tuple(request.POST.getlist("hsn[]"))
+        # description = request.POST.getlist("description[]")
+        qty =  tuple(request.POST.getlist("qty[]"))
+        price =  tuple(request.POST.getlist("price[]"))
+        
+        discount =  tuple(request.POST.getlist("discount[]"))
+        if request.POST.get('placosupply') == cmp1.state:
+                tax =  tuple(request.POST.getlist("tax1[]"))
+        else:
+                tax =  tuple(request.POST.getlist("tax2[]"))
+        # print(tax)
+        total =  tuple(request.POST.getlist("total[]"))
+
+        invoiceid=invoice.objects.get(invoiceid =inv2.invoiceid)
+
+        if len(product)==len(hsn)==len(qty)==len(price)==len(tax)==len(discount)==len(total):
+            mapped=zip(product,hsn, qty,price,tax,discount,total)
+            mapped=list(mapped)
+            for ele in mapped:
+                invoiceAdd  = invoice_item.objects.create(product = ele[0],hsn=ele[1],qty=ele[2],
+                price=ele[3],tax=ele[4],discount=ele[5],total=ele[6],invoice=invoiceid,cid=cmp1)
+
+                itemqty1 = itemtable.objects.get(name=ele[0],cid=cmp1)
+                if itemqty1.stock != 0:
+                    temp=0
+                    temp = itemqty1.stock
+                    temp = temp-int(ele[2])
+                    itemqty1.stock =temp
+                    itemqty1.save()
+
+                itemqty = itemtable.objects.get(name=ele[0],cid=cmp1)
+                if itemqty.stockout != 0:
+                    temp=0
+                    temp = itemqty.stockout
+                    temp = temp+int(ele[2])
+                    itemqty.stockout =temp
+                    itemqty.save()
+
+                elif itemqty.stockout == 0:
+                    temp=0
+                    temp = itemqty.stockout 
+                    temp = temp+int(ele[2])
+                    itemqty.stockout =temp
+                    itemqty.save()
+
+
+        invoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
+        
+        last_inv = invoice.objects.last()
+        last_inv.tot_inv_no = last_inv.invoiceid
+        last_inv.save()
+
+        
+        dl=inv2.invoiceno
+        dt=inv2.invoicedate
+
+        if len(product)==len(qty) and product and qty:
+            mapped=zip(product,qty)
+            mapped=list(mapped)
+            for ele in mapped:
+                iAdd = itemstock.objects.create(items = ele[0],qty = ele[1],transactions="Invoice",details=dl,
+                date=dt,inv=invoiceid,cid=cmp1)
+
 
 
         pl3=profit_loss()
@@ -3817,68 +3882,6 @@ def invcreate2(request):
         # accont.balance = accont.balance - TCS
         # accont.save()
 
-        product = tuple(request.POST.getlist("product[]"))
-        hsn  =  tuple(request.POST.getlist("hsn[]"))
-        # description = request.POST.getlist("description[]")
-        qty =  tuple(request.POST.getlist("qty[]"))
-        price =  tuple(request.POST.getlist("price[]"))
-        
-        discount =  tuple(request.POST.getlist("discount[]"))
-        if request.POST.get('placosupply') == cmp1.state:
-                tax =  tuple(request.POST.getlist("tax1[]"))
-        else:
-                tax =  tuple(request.POST.getlist("tax2[]"))
-        # print(tax)
-        total =  tuple(request.POST.getlist("total[]"))
-
-        invoiceid=invoice.objects.get(invoiceid =inv2.invoiceid)
-
-        dl=inv2.invoiceno
-        dt=inv2.invoicedate
-
-        if len(product)==len(qty) and product and qty:
-            mapped=zip(product,qty)
-            mapped=list(mapped)
-            for ele in mapped:
-                iAdd = itemstock.objects.create(items = ele[0],qty = ele[1],transactions="Invoice",details=dl,
-                date=dt,inv=invoiceid,cid=cmp1)
-
-        if len(product)==len(hsn)==len(qty)==len(price)==len(tax)==len(discount)==len(total) and product and hsn and discount and qty and price and tax and total:
-            mapped=zip(product,hsn, qty,price,tax,discount,total)
-            mapped=list(mapped)
-            for ele in mapped:
-                invoiceAdd  = invoice_item.objects.create(product = ele[0],hsn=ele[1],qty=ele[2],
-                price=ele[3],tax=ele[4],discount=ele[5],total=ele[6],invoice=invoiceid,cid=cmp1)
-
-                itemqty1 = itemtable.objects.get(name=ele[0],cid=cmp1)
-                if itemqty1.stock != 0:
-                    temp=0
-                    temp = itemqty1.stock
-                    temp = temp-int(ele[2])
-                    itemqty1.stock =temp
-                    itemqty1.save()
-
-                itemqty = itemtable.objects.get(name=ele[0],cid=cmp1)
-                if itemqty.stockout != 0:
-                    temp=0
-                    temp = itemqty.stockout
-                    temp = temp+int(ele[2])
-                    itemqty.stockout =temp
-                    itemqty.save()
-
-                elif itemqty.stockout == 0:
-                    temp=0
-                    temp = itemqty.stockout 
-                    temp = temp+int(ele[2])
-                    itemqty.stockout =temp
-                    itemqty.save()
-
-
-        invoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
-        
-        last_inv = invoice.objects.last()
-        last_inv.tot_inv_no = last_inv.invoiceid
-        last_inv.save()
 
 
         return redirect('goinvoices')
@@ -40987,6 +40990,29 @@ def cust_details(request):
     return JsonResponse({'email': email,'street': street,'city':city,'pincode': pincode,"state": state,
                             'country' : country,'gsttype':gsttype,'gstno':gstno,'shipstate':shipstate},safe=False)
 
+@login_required(login_url='regcomp')
+def custdata(request):
+    if 'uid' in request.session:
+        if request.session.has_key('uid'):
+            uid = request.session['uid']
+        else:
+            return redirect('/')
+        comp = company.objects.get(id=request.session['uid'])
+        cust_id = request.POST.get('id').split(" ")[0]
+        cust = customer.objects.get(customerid=cust_id, cid = comp)
+        email = cust.email
+        street = cust.street
+        city = cust.city
+        state = cust.state
+        pincode = cust.pincode
+        country = cust.country
+        gsttype = cust.gsttype
+        gstno = cust.gstin
+        shipstate = cust.shipstate
+       
+    return JsonResponse({'email': email,'street': street,'city':city,'pincode': pincode,"state": state,
+                            'country' : country,'gsttype':gsttype,'gstno':gstno,'shipstate':shipstate},safe=False)
+
 def balancedata(request):
     name = request.GET.get('name')
     id = request.GET.get('id')
@@ -42351,8 +42377,8 @@ def addrecinvoices(request):
             uid = request.session['uid']
         else:
             return redirect('/')
-        # toda = date.today()
-        # tod = toda.strftime("%Y-%m-%d")
+        toda = date.today()
+        tod = toda.strftime("%Y-%m-%d")
         cmp1 = company.objects.get(id=request.session['uid'])
         rpt = repeatevry.objects.filter(cid=cmp1)
         cust = customer.objects.filter(cid=cmp1)
@@ -42409,7 +42435,7 @@ def addrecinvoices(request):
         terms  = PaymentTerms.objects.filter(cid=cmp1)
         bank = bankings_G.objects.filter(cid=cmp1)
 
-        context = {'cmp1': cmp1, 'customers': customers,'bank':bank,'terms':terms,'cust':cust,'item':item,
+        context = {'cmp1': cmp1, 'customers': customers,'bank':bank,'terms':terms,'cust':cust,'item':item,'tod':tod,
                    'acc':acc,'acc1':acc1,'inv_list':inv_list, 'ref_no':ref_no, 'rec_no':rec_no
                    }
         return render(request,'app1/addrecinvoices1.html',context)
@@ -42451,7 +42477,7 @@ def createrecinvoices(request):
             formatted_inv_date = original_inv_date.strftime('%Y-%m-%d')
 
             original_due_date = datetime.strptime(request.POST.get('duedate'), '%d-%m-%Y')
-            formatted_due_date = original_due_date.strftime('%Y-%m-%d')       
+            formatted_due_date = original_due_date.strftime('%Y-%m-%d')    
 
             cname = str(request.POST.get('customername',False))
             recinvoiceno=str(request.POST.get('rec_no',False))
@@ -42481,6 +42507,8 @@ def createrecinvoices(request):
             adjust = request.POST.get("adj")
             entity = request.POST.get("recinvoice")
 
+            print(formatted_due_date)
+
             rec = recinvoice(customername=cname,email=email,profilename=profilename,shipping_charge=shipping_charge,adjust=adjust,entity_type=entity,
                              taxamount=taxamount,baldue=baldue,recinvoiceno=recinvoiceno,terms=terms,startdate=formatted_inv_date,enddate=formatted_due_date,
                              bname=bname,placosupply=placosupply,recinvoice_orderno=ordernumber,repeate_every=repeate_every,
@@ -42498,23 +42526,43 @@ def createrecinvoices(request):
 
             rec.save()
 
-            recinvoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
+            product = tuple(request.POST.getlist("product[]"))
+            hsn  =  tuple(request.POST.getlist("hsn[]"))
+            # description = request.POST.getlist("description[]")
+            qty =  tuple(request.POST.getlist("qty[]"))
+            price =  tuple(request.POST.getlist("price[]"))
+            
+            discount =  tuple(request.POST.getlist("discount[]"))
+            if request.POST.get('placosupply') == cmp1.state:
+                    tax =  tuple(request.POST.getlist("tax1[]"))
+            else:
+                    tax =  tuple(request.POST.getlist("tax2[]"))
+            # print(tax)
+            total =  tuple(request.POST.getlist("total[]"))
 
+            recinvoiceid=recinvoice.objects.get(recinvoiceid=rec.recinvoiceid)
+
+            if len(product)==len(hsn)==len(qty)==len(price)==len(tax)==len(discount)==len(total):
+                mapped=zip(product,hsn, qty,price,tax,discount,total)
+                mapped=list(mapped)
+                for ele in mapped:
+                    recinvAdd  = recinvoice_item.objects.create(product = ele[0],hsn=ele[1],qty=ele[2],
+                    price=ele[3],tax=ele[4],discount=ele[5],total=ele[6],recinvoice=recinvoiceid,cid=cmp1)
+
+                    itemqty = itemtable.objects.get(name=ele[0],cid=cmp1)
+                    if itemqty.stock != 0:
+                        temp=0
+                        temp = itemqty.stock 
+                        temp = temp-int(ele[2])
+                        itemqty.stock =temp
+                        itemqty.save()
+
+            
+            recinvoice.objects.all().update(tot_inv_no=F('tot_inv_no') + 1)
             
             last_inv = recinvoice.objects.last()
             last_inv.tot_inv_no = last_inv.recinvoiceid
             last_inv.save()
-            
-            product = tuple(request.POST.getlist("product[]"))
-            hsn = tuple(request.POST.getlist("hsn[]"))
-            quantity = tuple(request.POST.getlist("qty[]"))
-            rate = tuple(request.POST.getlist("price[]"))
-            if request.POST.get('placosupply') == cmp1.state:
-                tax =  tuple(request.POST.getlist("tax1[]"))
-            else:
-                tax =  tuple(request.POST.getlist("tax2[]"))
-            amount = tuple(request.POST.getlist("total[]"))
-            discount = tuple(request.POST.getlist("discount[]"))
 
             # placosupply=request.POST['placosupply']
             # if placosupply == cmp1.state:
@@ -42533,21 +42581,6 @@ def createrecinvoices(request):
             #     accoigst.balance = round(float(accoigst.balance + IGST), 2)
             #     accoigst.save()
 
-
-            if len(product)==len(hsn)==len(quantity)==len(rate)==len(tax)==len(amount)==len(discount):
-                mapped=zip(product,hsn,quantity,rate,tax,amount,discount)
-                mapped=list(mapped)
-                for ele in mapped:
-                    recinvAdd,created = recinvoice_item.objects.get_or_create(product=ele[0],hsn=ele[1],qty=ele[2],price=ele[3],tax=ele[4],total=ele[5],discount=ele[6],recinvoice=rec,cid=cmp1)
-                    itemqty = itemtable.objects.get(name=ele[0],cid=cmp1)
-                    if itemqty.stock != 0:
-                        temp=0
-                        temp = itemqty.stock 
-                        temp = temp-int(ele[2])
-                        itemqty.stock =temp
-                        itemqty.save()
-
-        
 
             return redirect('gorecinvoices')
         return render(request,'app1/recinvoices.html',{'cmp1': cmp1})
