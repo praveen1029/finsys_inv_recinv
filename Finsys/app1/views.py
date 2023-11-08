@@ -3742,100 +3742,100 @@ def invcreate2(request):
         last_inv.save()
 
         
-        dl=inv2.invoiceno
-        dt=inv2.invoicedate
+        # dl=inv2.invoiceno
+        # dt=inv2.invoicedate
 
-        if len(product)==len(qty) and product and qty:
-            mapped=zip(product,qty)
-            mapped=list(mapped)
-            for ele in mapped:
-                iAdd = itemstock.objects.create(items = ele[0],qty = ele[1],transactions="Invoice",details=dl,
-                date=dt,inv=invoiceid,cid=cmp1)
+        # if len(product)==len(qty) and product and qty:
+        #     mapped=zip(product,qty)
+        #     mapped=list(mapped)
+        #     for ele in mapped:
+        #         iAdd = itemstock.objects.create(items = ele[0],qty = ele[1],transactions="Invoice",details=dl,
+        #         date=dt,inv=invoiceid,cid=cmp1)
 
 
 
-        pl3=profit_loss()
-        pl3.details = inv2.customername
-        pl3.cid = cmp1
-        pl3.acctype = "Income"
-        pl3.transactions = "Invoice"
-        pl3.accname = "Sales"
-        pl3.inv = inv2
-        pl3.details1 = inv2.invoiceno
-        pl3.date = inv2.invoicedate
-        pl3.payments = inv2.grandtotal
-        pl3.save()
+        # pl3=profit_loss()
+        # pl3.details = inv2.customername
+        # pl3.cid = cmp1
+        # pl3.acctype = "Income"
+        # pl3.transactions = "Invoice"
+        # pl3.accname = "Sales"
+        # pl3.inv = inv2
+        # pl3.details1 = inv2.invoiceno
+        # pl3.date = inv2.invoicedate
+        # pl3.payments = inv2.grandtotal
+        # pl3.save()
 
-        bs3=balance_sheet()
-        bs3.details = inv2.customername
-        bs3.cid = cmp1
-        bs3.acctype = "Account Receivable(Debtors)"
-        bs3.transactions = "Invoice"
-        bs3.account = "Account Receivable(Debtors)"
-        bs3.invc = inv2
-        bs3.details1 = inv2.invoiceno
-        bs3.details2 = inv2.invoice_orderno
-        bs3.date = inv2.invoicedate
-        bs3.payments = inv2.grandtotal
-        bs3.save()
+        # bs3=balance_sheet()
+        # bs3.details = inv2.customername
+        # bs3.cid = cmp1
+        # bs3.acctype = "Account Receivable(Debtors)"
+        # bs3.transactions = "Invoice"
+        # bs3.account = "Account Receivable(Debtors)"
+        # bs3.invc = inv2
+        # bs3.details1 = inv2.invoiceno
+        # bs3.details2 = inv2.invoice_orderno
+        # bs3.date = inv2.invoicedate
+        # bs3.payments = inv2.grandtotal
+        # bs3.save()
 
-        placosupply=request.POST.get('placosupply')
-        if placosupply == cmp1.state:
-            bs4=balance_sheet()
-            bs4.details = inv2.customername
-            bs4.cid = cmp1
-            bs4.acctype = "Current Liabilities"
-            bs4.transactions = "Invoice"
-            bs4.account = "Output CGST"
-            bs4.invc = inv2
-            bs4.details1 = inv2.invoiceno
-            bs4.details2 = inv2.invoice_orderno
-            bs4.date = inv2.invoicedate
-            bs4.amount = inv2.grandtotal
-            bs4.payments = inv2.CGST
-            bs4.save()
+        # placosupply=request.POST.get('placosupply')
+        # if placosupply == cmp1.state:
+        #     bs4=balance_sheet()
+        #     bs4.details = inv2.customername
+        #     bs4.cid = cmp1
+        #     bs4.acctype = "Current Liabilities"
+        #     bs4.transactions = "Invoice"
+        #     bs4.account = "Output CGST"
+        #     bs4.invc = inv2
+        #     bs4.details1 = inv2.invoiceno
+        #     bs4.details2 = inv2.invoice_orderno
+        #     bs4.date = inv2.invoicedate
+        #     bs4.amount = inv2.grandtotal
+        #     bs4.payments = inv2.CGST
+        #     bs4.save()
 
-            bs5=balance_sheet()
-            bs5.details = inv2.customername
-            bs5.cid = cmp1
-            bs5.acctype = "Current Liabilities"
-            bs5.transactions = "Invoice"
-            bs5.account = "Output SGST"
-            bs5.invc = inv2
-            bs5.details1 = inv2.invoiceno
-            bs5.details2 = inv2.invoice_orderno
-            bs5.date = inv2.invoicedate
-            bs5.amount = inv2.grandtotal
-            bs5.payments = inv2.SGST
-            bs5.save()
-        else:
-            bs6=balance_sheet()
-            bs6.details = inv2.customername
-            bs6.cid = cmp1
-            bs6.acctype = "Current Liabilities"
-            bs6.transactions = "Invoice"
-            bs6.account = "Output IGST"
-            bs6.invc = inv2
-            bs6.details1 = inv2.invoiceno
-            bs6.details2 = inv2.invoice_orderno
-            bs6.date = inv2.invoicedate
-            bs6.amount = inv2.grandtotal
-            bs6.payments = inv2.IGST
-            bs6.save()
+        #     bs5=balance_sheet()
+        #     bs5.details = inv2.customername
+        #     bs5.cid = cmp1
+        #     bs5.acctype = "Current Liabilities"
+        #     bs5.transactions = "Invoice"
+        #     bs5.account = "Output SGST"
+        #     bs5.invc = inv2
+        #     bs5.details1 = inv2.invoiceno
+        #     bs5.details2 = inv2.invoice_orderno
+        #     bs5.date = inv2.invoicedate
+        #     bs5.amount = inv2.grandtotal
+        #     bs5.payments = inv2.SGST
+        #     bs5.save()
+        # else:
+        #     bs6=balance_sheet()
+        #     bs6.details = inv2.customername
+        #     bs6.cid = cmp1
+        #     bs6.acctype = "Current Liabilities"
+        #     bs6.transactions = "Invoice"
+        #     bs6.account = "Output IGST"
+        #     bs6.invc = inv2
+        #     bs6.details1 = inv2.invoiceno
+        #     bs6.details2 = inv2.invoice_orderno
+        #     bs6.date = inv2.invoicedate
+        #     bs6.amount = inv2.grandtotal
+        #     bs6.payments = inv2.IGST
+        #     bs6.save()
             
-        bs7=balance_sheet()
-        bs7.details = inv2.customername
-        bs7.cid = cmp1
-        bs7.acctype = "Current Assets"
-        bs7.transactions = "Invoice"
-        bs7.account = "TDS Receivable"
-        bs7.invc = inv2
-        bs7.details1 = inv2.invoiceno
-        bs7.details2 = inv2.invoice_orderno
-        bs7.date = inv2.invoicedate
-        bs7.amount = inv2.grandtotal
+        # bs7=balance_sheet()
+        # bs7.details = inv2.customername
+        # bs7.cid = cmp1
+        # bs7.acctype = "Current Assets"
+        # bs7.transactions = "Invoice"
+        # bs7.account = "TDS Receivable"
+        # bs7.invc = inv2
+        # bs7.details1 = inv2.invoiceno
+        # bs7.details2 = inv2.invoice_orderno
+        # bs7.date = inv2.invoicedate
+        # bs7.amount = inv2.grandtotal
         # bs7.payments = inv2.TCS
-        bs7.save()
+        # bs7.save()
 
 
         # acc = accounts1.objects.get(
@@ -29395,77 +29395,75 @@ def updateinvoice2(request, id):
                         price=ele[3],tax=ele[4],discount=ele[5],total=ele[6])
                 
                    
-
-        pl3=profit_loss.objects.get(cid=cmp1,inv=invoi)
-        pl3.details = invoi.customername
-        pl3.cid = cmp1
-        pl3.acctype = "Income"
-        pl3.transactions = "Invoice"
-        pl3.accname = "Sales"
-        pl3.date = invoi.invoicedate
-        pl3.payments = invoi.subtotal
-        pl3.save()
-
-        bs3=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Account Receivable(Debtors)')
-        bs3.details = invoi.customername
-        bs3.cid = cmp1
-        bs3.acctype = "Account Receivable(Debtors)"
-        bs3.transactions = "Invoice"
-        bs3.account = "Account Receivable(Debtors)"
-        bs3.invc = invoi
-        bs3.date = invoi.invoicedate
-        bs3.payments = invoi.grandtotal
-        bs3.save()
-
-        placosupply=request.POST.get('placosupply')
-        if placosupply == cmp1.state:
-            bs4=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Output CGST')
-            bs4.details = invoi.customername
-            bs4.cid = cmp1
-            bs4.acctype = "Current Liabilities"
-            bs4.transactions = "Invoice"
-            bs4.account = "Output CGST"
-            bs4.invc = invoi
-            bs4.date = invoi.invoicedate
-            bs4.payments = invoi.CGST
-            bs4.save()
-
-            bs5=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Output SGST')
-            bs5.details = invoi.customername
-            bs5.cid = cmp1
-            bs5.acctype = "Current Liabilities"
-            bs5.transactions = "Invoice"
-            bs5.account = "Output SGST"
-            bs5.invc = invoi
-            bs5.date = invoi.invoicedate
-            bs5.payments = invoi.SGST
-            bs5.save()
-        else:
-            bs6=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Output IGST')
-            bs6.details = invoi.customername
-            bs6.cid = cmp1
-            bs6.acctype = "Current Liabilities"
-            bs6.transactions = "Invoice"
-            bs6.account = "Output IGST"
-            bs6.invc = invoi
-            bs6.date = invoi.invoicedate
-            bs6.payments = invoi.IGST
-            bs6.save()
-            
-        bs7=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='TDS Receivable')
-        bs7.details = invoi.customername
-        bs7.cid = cmp1
-        bs7.acctype = "Current Assets"
-        bs7.transactions = "Invoice"
-        bs7.account = "TDS Receivable"
-        bs7.invc = invoi
-        bs7.date = invoi.invoicedate
-        # bs7.payments = invoi.TCS
-        bs7.save()
-
-
-        
         return redirect('invoice_view',id)
+
+        # pl3=profit_loss.objects.get(cid=cmp1,inv=invoi)
+        # pl3.details = invoi.customername
+        # pl3.cid = cmp1
+        # pl3.acctype = "Income"
+        # pl3.transactions = "Invoice"
+        # pl3.accname = "Sales"
+        # pl3.date = invoi.invoicedate
+        # pl3.payments = invoi.subtotal
+        # pl3.save()
+
+        # bs3=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Account Receivable(Debtors)')
+        # bs3.details = invoi.customername
+        # bs3.cid = cmp1
+        # bs3.acctype = "Account Receivable(Debtors)"
+        # bs3.transactions = "Invoice"
+        # bs3.account = "Account Receivable(Debtors)"
+        # bs3.invc = invoi
+        # bs3.date = invoi.invoicedate
+        # bs3.payments = invoi.grandtotal
+        # bs3.save()
+
+        # placosupply=request.POST.get('placosupply')
+        # if placosupply == cmp1.state:
+        #     bs4=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Output CGST')
+        #     bs4.details = invoi.customername
+        #     bs4.cid = cmp1
+        #     bs4.acctype = "Current Liabilities"
+        #     bs4.transactions = "Invoice"
+        #     bs4.account = "Output CGST"
+        #     bs4.invc = invoi
+        #     bs4.date = invoi.invoicedate
+        #     bs4.payments = invoi.CGST
+        #     bs4.save()
+
+        #     bs5=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Output SGST')
+        #     bs5.details = invoi.customername
+        #     bs5.cid = cmp1
+        #     bs5.acctype = "Current Liabilities"
+        #     bs5.transactions = "Invoice"
+        #     bs5.account = "Output SGST"
+        #     bs5.invc = invoi
+        #     bs5.date = invoi.invoicedate
+        #     bs5.payments = invoi.SGST
+        #     bs5.save()
+        # else:
+        #     bs6=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='Output IGST')
+        #     bs6.details = invoi.customername
+        #     bs6.cid = cmp1
+        #     bs6.acctype = "Current Liabilities"
+        #     bs6.transactions = "Invoice"
+        #     bs6.account = "Output IGST"
+        #     bs6.invc = invoi
+        #     bs6.date = invoi.invoicedate
+        #     bs6.payments = invoi.IGST
+        #     bs6.save()
+            
+        # bs7=balance_sheet.objects.get(cid=cmp1,invc=invoi,account='TDS Receivable')
+        # bs7.details = invoi.customername
+        # bs7.cid = cmp1
+        # bs7.acctype = "Current Assets"
+        # bs7.transactions = "Invoice"
+        # bs7.account = "TDS Receivable"
+        # bs7.invc = invoi
+        # bs7.date = invoi.invoicedate
+        # # bs7.payments = invoi.TCS
+        # bs7.save()
+        
         # product = request.POST.getlist("product[]")
         # hsn  = request.POST.getlist("hsn[]")
         # description = request.POST.getlist("description[]")
@@ -42462,6 +42460,7 @@ def addrecinvoices1(request):
     return render(request,'app1/addrecinvoices4.html',context)
 
 
+
 from django.db.models import F
 
 def createrecinvoices(request):
@@ -42479,51 +42478,32 @@ def createrecinvoices(request):
             original_due_date = datetime.strptime(request.POST.get('duedate'), '%d-%m-%Y')
             formatted_due_date = original_due_date.strftime('%Y-%m-%d')    
 
-            cname = str(request.POST.get('customername',False))
-            recinvoiceno=str(request.POST.get('rec_no',False))
-            terms=str(request.POST.get('terms',False))
-            email=str(request.POST.get('email',False))
-            bname=str(request.POST.get('bname',False))
-            placosupply=request.POST['placosupply']
-            profilename=str(request.POST.get('profname',False))
-            ordernumber=str(request.POST.get('ordernum',False))
-            taxamount=request.POST['taxamount']
-            repeate_every=str(request.POST.get('reptevery',False))
-            subtotal=request.POST.get('subtotal',False)
-            note = str(request.POST.get('Note',False))
-            IGST = str(request.POST.get('igst',False))
-            CGST = str(request.POST.get('cgst',False))
-            SGST = str(request.POST.get('sgst',False))
-            grandtotal=request.POST.get('grandtotal',False)
-            amtrecvd=request.POST.get('amtrecvd',False)
-            baldue=request.POST.get('grandtotal',False)
-            cheque_no=request.POST.get("cheque_id")
-            upi_no=request.POST.get("upi_id")
-            bank_no=request.POST.get("bnk_id")
-            pay_method=request.POST.get("method")
-            paidoff = request.POST.get("advance")
-            balance = request.POST.get("balance")
-            shipping_charge = request.POST.get("ship")
-            adjust = request.POST.get("adj")
-            entity = request.POST.get("recinvoice")
-
-            print(formatted_due_date)
-
-            rec = recinvoice(customername=cname,email=email,profilename=profilename,shipping_charge=shipping_charge,adjust=adjust,entity_type=entity,
-                             taxamount=taxamount,baldue=baldue,recinvoiceno=recinvoiceno,terms=terms,startdate=formatted_inv_date,enddate=formatted_due_date,
-                             bname=bname,placosupply=placosupply,recinvoice_orderno=ordernumber,repeate_every=repeate_every,
-                             amtrecvd=amtrecvd,subtotal=subtotal,grandtotal=grandtotal,IGST=IGST,CGST=CGST,SGST=SGST,note=note,cid=cmp1,
-                             pay_method=pay_method,cheque_no=cheque_no,upi_no=upi_no,bank_no=bank_no,paidoff=paidoff,balance=balance)
-
+            rec = recinvoice(customername=request.POST.get('customername'), 
+                                email=request.POST.get('email'),
+                                profilename = request.POST.get('profname'),
+                                shipping_charge = request.POST.get("ship"),
+                                adjust = request.POST.get("adj"),
+                                entity_type = request.POST.get("recinvoice"),
+                                baldue=request.POST.get('grandtotal'),
+                                taxamount = request.POST.get("taxamount"),
+                                recinvoiceno=request.POST.get('rec_no'),
+                                terms=request.POST.get('terms'),startdate=formatted_inv_date,enddate=formatted_due_date,
+                                bname=request.POST.get('bname'),placosupply=request.POST.get('placosupply'),recinvoice_orderno = request.POST.get('ordernum'),
+                                repeate_every = request.POST.get('reptevery'),amtrecvd=request.POST.get('amtrecvd'), 
+                                subtotal=float(request.POST.get('subtotal')),grandtotal=request.POST.get('grandtotal'),IGST = request.POST.get('igst'),
+                                CGST = request.POST.get('cgst'),SGST = request.POST.get('sgst'),cid=cmp1,note = request.POST.get('Note'),pay_method=request.POST.get("method"),
+                                cheque_no=request.POST.get("cheque_id"), upi_no=request.POST.get("upi_id"), bank_no=request.POST.get("bnk_id"),
+                                paidoff = request.POST.get("advance"),balance = request.POST.get("balance"))
+            
+            
             if len(request.FILES) != 0:
-                rec.file=request.FILES['file'] 
+                rec.file=request.FILES.get('file')
             rec.save()
 
             if 'Draft' in request.POST:
                 rec.status = "Draft"
             if "Save" in request.POST:
                 rec.status = "Approved" 
-
             rec.save()
 
             product = tuple(request.POST.getlist("product[]"))

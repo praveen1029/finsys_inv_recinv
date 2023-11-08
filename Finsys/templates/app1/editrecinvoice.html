@@ -329,7 +329,7 @@
                     <td style="width: 13%;">
                       <input hidden value="{{cmp1.state}}" id="cmpstate">
                       <input type="text"  id="select_tax" placeholder="Tax Rate" class="form-control seltax d-none">
-                      {% if cmp1.state == invoice.placosupply  %}
+                      {% if cmp1.state == recinvoice.placosupply  %}
                       <select name='tax1[]' id="tax1{{ forloop.counter }}" class="form-control tax intra_tax d-flex" onchange="taxchange(this.id)">
                         <option selected value="{{j.tax}}" hidden>{{j.tax}}% GST</option>
                         <option  value=" " hidden>Select Tax</option>

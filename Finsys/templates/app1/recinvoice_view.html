@@ -388,7 +388,7 @@ footer p {
                                       <li  class=" dropdown-toggle btn btn-outline-info rounded-pill text-grey p-1"data-toggle="dropdown"> &nbsp;<i class="fa fa-share-alt"></i>&nbsp;Share&nbsp;&nbsp;</li>
                                       <ul class="dropdown-menu" style="background-color: black;">
                                           <li style="margin-left: 50px;" > {% post_to_whatsapp object_or_url "WhatsApp" %}</li>
-                                          <li style="margin-left: 50px;" >{% send_email object.title "New Song: {{object.title}}. Check it out!" object_or_url "Email" %}</li>
+                                          <li style="margin-left: 50px;" >{% send_email object.title "{{object.title}}" object_or_url "Email" %}</li>
                                           
                                       </ul>
                                     </div>
@@ -534,50 +534,61 @@ footer p {
                                     <h5 style="border-bottom: 1px solid rgba(128, 128, 128, 0.6); width: fit-content;">Product Details</h5>
 
                                     {% for j in recinvitem %}
-                                        <div class="row mb-4 d-flex justify-content-between align-items-center">
-                                            <div class="col-md-3 mt-3">
-                                                <h6 class="mb-0">Name</h6>
-                                            </div>
-                                            <div class="col-md-3 mt-3">
-                                                <p class="mb-0 text-right">{{j.product}}</p>
-                                            </div>
-            
-                                            <div class="col-md-3 mt-3 vl">
-                                                <h6 class="mb-0">Price</h6>
-                                            </div>
-                                            <div class="col-md-3 mt-3">
-                                                <p class="mb-0 text-right">{{j.price}}</p>
-                                            </div>
-                                            
+                                    <div class="row mb-4 d-flex justify-content-between align-items-center">
+                                        <div class="col-md-3 mt-3">
+                                            <h6 class="mb-0">Name</h6>
                                         </div>
-                                        <div class="row mb-4 d-flex justify-content-between align-items-center">
-                                            <div class="col-md-3 mt-3">
-                                                <h6 class="mb-0">Quantity</h6>
-                                            </div>
-                                            <div class="col-md-3 mt-3">
-                                                <p class="mb-0 text-right">{{ j.qty }}</p>
-                                            </div>
-                                            <div class="col-md-3 mt-3 vl">
-                                                <h6 class="mb-0">Tax Amount</h6>
-                                            </div>
-                                            <div class="col-md-3 mt-3">
-                                                <p class="mb-0 text-right">{{j.tax}} %</p>
-                                            </div>
+                                        <div class="col-md-3 mt-3">
+                                            <p class="mb-0 text-right">{{j.product}}</p>
                                         </div>
-                                        <div class="row mb-4 d-flex justify-content-start align-items-center">
-                                            <div class="col-md-3 mt-3"> 
-                                                <h6 class="mb-0">Discount</h6>
-                                            </div>
-                                            <div class="col-md-3 mt-3">
-                                                <p class="mb-0 text-right">{{j.discount}}</p>
-                                            </div>
-                                            <div class="col-md-3 mt-3 vl"> 
-                                                <h6 class="mb-0">Total</h6>
-                                            </div>
-                                            <div class="col-md-3 mt-3">
-                                                <p class="mb-0 text-right">{{j.total}}</p>
-                                            </div>
+        
+                                        <div class="col-md-3 mt-3 vl">
+                                            <h6 class="mb-0">HSN</h6>
                                         </div>
+                                        <div class="col-md-3 mt-3">
+                                            <p class="mb-0 text-right">{{j.hsn}}</p>
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="row mb-4 d-flex justify-content-between align-items-center">
+                                        <div class="col-md-3 mt-3">
+                                            <h6 class="mb-0">Price</h6>
+                                        </div>
+                                        <div class="col-md-3 mt-3">
+                                            <p class="mb-0 text-right">{{j.price}}</p>
+                                        </div>
+                                        <div class="col-md-3 mt-3 vl">
+                                            <h6 class="mb-0">Quantity</h6>
+                                        </div>
+                                        <div class="col-md-3 mt-3">
+                                            <p class="mb-0 text-right">{{ j.qty }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-4 d-flex justify-content-start align-items-center">
+                                        <div class="col-md-3 mt-3">
+                                            <h6 class="mb-0">Tax Amount</h6>
+                                        </div>
+                                        <div class="col-md-3 mt-3">
+                                            <p class="mb-0 text-right">{{j.tax}} %</p>
+                                        </div>
+                                        <div class="col-md-3 mt-3 vl"> 
+                                            <h6 class="mb-0">Discount</h6>
+                                        </div>
+                                        <div class="col-md-3 mt-3">
+                                            <p class="mb-0 text-right">{{j.discount}}</p>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-4 d-flex justify-content-start align-items-center">
+                                        <div class="col-md-3 mt-3"> 
+                                            <h6 class="mb-0">Total</h6>
+                                        </div>
+                                        <div class="col-md-3 mt-3">
+                                            <p class="mb-0 text-right">{{j.total}}</p>
+                                        </div>
+                                        <div class="col-md-6 mt-3 vl">
+                                            <h6 class="mb-0">&nbsp;</h6>
+                                        </div>
+                                    </div>
                                         <hr class="my-4" style="width: 50%;">
                                     {% endfor %}
                                 </div>
@@ -622,15 +633,25 @@ footer p {
                                 <h6>{{ recinvoice.SGST }}</h6>
                             </div>
                             {%endif%}
+                            {% if recinvoice.shipping_charge != '0.00' %}
+                            {% if recinvoice.shipping_charge != '0.0' %}
+                            {% if recinvoice.shipping_charge != '0' %}
                             <div class="d-flex justify-content-between mb-4">
                                 <h5 class="">Shipping Charge</h5>
                                 <h6>{{ recinvoice.shipping_charge}}</h6>
                             </div>
-                            {% if recinvoice.adjust %}
+                            {% endif %}
+                            {% endif %}
+                            {% endif %}
+                            {% if recinvoice.adjust != '0.00' %}
+                            {% if recinvoice.adjust != '0.0' %}
+                            {% if recinvoice.adjust != '0' %}
                             <div class="d-flex justify-content-between mb-4">
                                 <h5 class="">Adjustment</h5>
                                 <h6>{{recinvoice.adjust }}</h6>
                             </div>
+                            {% endif %}
+                            {% endif %}
                             {% endif %}
                             <hr class="my-4" style="background-color: #fff;">
                             <div class="d-flex justify-content-between mb-4">
@@ -706,6 +727,7 @@ footer p {
                                     <thead >
                                         <tr>
                                             <td style="text-align: center; font-weight:bold; color:black ">Items</td>
+                                            <td style="text-align: center; font-weight:bold; color:black ">HSN</td>
                                             <td style="font-weight:bold; color:black ">Price</td>
                                             <td style="font-weight:bold; color:black">Quantity</td>
                                             <td style="font-weight:bold; color:black">Tax</td>
@@ -721,6 +743,7 @@ footer p {
                                                 {{j.product}}
                                                 
                                             </td>
+                                            <td style="color:black">{{j.hsn}}</td>
                                             <td style="color:black">{{j.price}}</td>
                                             <td style="color:black">{{j.qty}}</td>
                                             <td style="color:black">{{j.tax}} %</td>
@@ -771,17 +794,27 @@ footer p {
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{recinvoice.taxamount}}</td>
                                                 </tr>
+                                                {% if recinvoice.shipping_charge != '0.00' %}
+                                                {% if recinvoice.shipping_charge != '0.0' %}
+                                                {% if recinvoice.shipping_charge != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Shipping Charge</td>
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{recinvoice.shipping_charge}}</td>
                                                 </tr>
-                                                {% if recinvoice.adjust %}
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endif %}
+                                                {% if recinvoice.adjust != '0.00' %}
+                                                {% if recinvoice.adjust != '0.0' %}
+                                                {% if recinvoice.adjust != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Adjustment</td>
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{recinvoice.adjust}}</td>
                                                 </tr>
+                                                {%endif%}
+                                                {%endif%}
                                                 {%endif%}
                                             </tbody>
         
@@ -892,6 +925,7 @@ footer p {
                                       <thead >
                                           <tr class="template3tablehead">
                                               <th class="text-center bg-dark" style="color:black">Items</th>
+                                              <th class="text-center bg-dark" style="color:black">HSN</th>
                                               <th class="text-center bg-dark" style="color:black">Quantity</th>
                                               <th class="text-center bg-dark" style="color:black">Rate</th>
                                               <th class="text-center bg-dark" style="color:black">Tax</th>
@@ -903,6 +937,7 @@ footer p {
                                           {% for itm in recinvitem %}
                                               <tr>
                                                   <td class="text-center" style="color:black">{{ itm.product}}</td>
+                                                  <td class="text-center" style="color:black">{{ itm.hsn }}</td>
                                                   <td class="text-center" style="color:black">{{ itm.qty }}</td>
                                                   <td class="text-center" style="color:black">{{ itm.price  }}</td>
                                                   <td class="text-center" style="color:black">{{ itm.tax  }}</td>
@@ -983,18 +1018,28 @@ footer p {
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{recinvoice.taxamount}}</td>
                                                 </tr>
-                                                  <tr >
-                                                      <td style="color: #000;">Shipping Charge</td>
-                                                      <td style="color: #000;">:</td>
-                                                      <td class="text-right" style="color: #000;">{{recinvoice.shipping_charge}}</td>
-                                                  </tr>
-                                                  {% if recinvoice.adjust %}
-                                                  <tr >
-                                                      <td style="color: #000;">Adjustment</td>
-                                                      <td style="color: #000;">:</td>
-                                                      <td class="text-right" style="color: #000;">{{recinvoice.adjust}}</td>
-                                                  </tr>
-                                                  {%endif%}
+                                                {% if recinvoice.shipping_charge != '0.00' %}
+                                                {% if recinvoice.shipping_charge != '0.0' %}
+                                                {% if recinvoice.shipping_charge != '0' %}
+                                                <tr >
+                                                    <td style="color: #000;">Shipping Charge</td>
+                                                    <td style="color: #000;">:</td>
+                                                    <td class="text-right" style="color: #000;">{{recinvoice.shipping_charge}}</td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endif %}
+                                                {% if recinvoice.adjust != '0.00' %}
+                                                {% if recinvoice.adjust != '0.0' %}
+                                                {% if recinvoice.adjust != '0' %}
+                                                <tr >
+                                                    <td style="color: #000;">Adjustment</td>
+                                                    <td style="color: #000;">:</td>
+                                                    <td class="text-right" style="color: #000;">{{recinvoice.adjust}}</td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endif %}
                                               </tbody>
       
                                           </table>
@@ -1081,6 +1126,7 @@ footer p {
                                         <thead >
                                             <tr class="template3tablehead">
                                                 <th class="text-center bg-dark"  style="color:black">Items</th>
+                                                <th class="text-center bg-dark"  style="color:black">HSN</th>
                                                 <th class="text-center bg-dark"  style="color:black">Quantity</th>
                                                 <th class="text-center bg-dark"  style="color:black">Rate</th>
                                                 <th class="text-center bg-dark"  style="color:black">Tax</th>
@@ -1092,6 +1138,7 @@ footer p {
                                             {% for itm in recinvitem %}
                                                 <tr>
                                                     <td class="text-center" style="color: black;">{{ itm.product}}</td>
+                                                    <td class="text-center" style="color: black;">{{ itm.hsn }}</td>
                                                     <td class="text-center" style="color: black;">{{ itm.qty }}</td>
                                                     <td class="text-center" style="color: black;">{{ itm.price  }}</td>
                                                     <td class="text-center" style="color: black;">{{ itm.tax  }}</td>
@@ -1143,17 +1190,27 @@ footer p {
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{recinvoice.taxamount}}</td>
                                                 </tr>
+                                                {% if recinvoice.shipping_charge != '0.00' %}
+                                                {% if recinvoice.shipping_charge != '0.0' %}
+                                                {% if recinvoice.shipping_charge != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Shipping Charge</td>
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{recinvoice.shipping_charge}}</td>
                                                 </tr>
-                                                {% if recinvoice.adjust %}
+                                                {% endif %}
+                                                {% endif %}
+                                                {% endif %}
+                                                {% if recinvoice.adjust != '0.00' %}
+                                                {% if recinvoice.adjust != '0.0' %}
+                                                {% if recinvoice.adjust != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Adjustment</td>
                                                     <td style="color: #000;">:</td>
                                                     <td class="text-right" style="color: #000;">{{recinvoice.adjust}}</td>
                                                 </tr>
+                                                {%endif%}
+                                                {%endif%}
                                                 {%endif%}
                                             </tbody>
         
@@ -1321,6 +1378,34 @@ footer p {
                                             {{ recinvoice.SGST }}
                                         </div>
                                     </div>
+                                    {% endif %}
+                                    {% if recinvoice.shipping_charge != '0.00' %}
+                                    {% if recinvoice.shipping_charge != '0.0' %}
+                                    {% if recinvoice.shipping_charge != '0' %}
+                                    <div class="row ml-1">
+                                        <div class="col-md-5 text-left" style=" color: black;">
+                                            Shipping Charge
+                                        </div>
+                                        <div class="col-md-6 text-right ml-2" style="color: black;">
+                                            {{ recinvoice.shipping_charge }}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
+                                    {% endif %}
+                                    {% if recinvoice.adjust != '0.00' %}
+                                    {% if recinvoice.adjust != '0.0' %}
+                                    {% if recinvoice.adjust != '0' %}
+                                    <div class="row ml-1">
+                                        <div class="col-md-5 text-left" style=" color: black;">
+                                            Adjust
+                                        </div>
+                                        <div class="col-md-6 text-right ml-2" style="color: black;">
+                                            {{ recinvoice.adjust }}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
                                     {% endif %}
                                     <hr class="ml-2 mr-2" style="color: black; border-bottom: 1px solid black; ">
                                 </div>
