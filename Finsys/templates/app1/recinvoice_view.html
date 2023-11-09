@@ -634,7 +634,7 @@ footer p {
                             </div>
                             {%endif%}
                             {% if recinvoice.shipping_charge != '0.00' %}
-                            {% if recinvoice.shipping_charge != '0.0' %}
+                            {% if recinvoice.shipping_charge != 0.0 %}
                             {% if recinvoice.shipping_charge != '0' %}
                             <div class="d-flex justify-content-between mb-4">
                                 <h5 class="">Shipping Charge</h5>
@@ -644,7 +644,7 @@ footer p {
                             {% endif %}
                             {% endif %}
                             {% if recinvoice.adjust != '0.00' %}
-                            {% if recinvoice.adjust != '0.0' %}
+                            {% if recinvoice.adjust != 0.0 %}
                             {% if recinvoice.adjust != '0' %}
                             <div class="d-flex justify-content-between mb-4">
                                 <h5 class="">Adjustment</h5>
@@ -795,7 +795,7 @@ footer p {
                                                     <td class="text-right" style="color: #000;">{{recinvoice.taxamount}}</td>
                                                 </tr>
                                                 {% if recinvoice.shipping_charge != '0.00' %}
-                                                {% if recinvoice.shipping_charge != '0.0' %}
+                                                {% if recinvoice.shipping_charge != 0.0 %}
                                                 {% if recinvoice.shipping_charge != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Shipping Charge</td>
@@ -806,7 +806,7 @@ footer p {
                                                 {% endif %}
                                                 {% endif %}
                                                 {% if recinvoice.adjust != '0.00' %}
-                                                {% if recinvoice.adjust != '0.0' %}
+                                                {% if recinvoice.adjust != 0.0 %}
                                                 {% if recinvoice.adjust != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Adjustment</td>
@@ -1019,7 +1019,7 @@ footer p {
                                                     <td class="text-right" style="color: #000;">{{recinvoice.taxamount}}</td>
                                                 </tr>
                                                 {% if recinvoice.shipping_charge != '0.00' %}
-                                                {% if recinvoice.shipping_charge != '0.0' %}
+                                                {% if recinvoice.shipping_charge != 0.0 %}
                                                 {% if recinvoice.shipping_charge != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Shipping Charge</td>
@@ -1030,7 +1030,7 @@ footer p {
                                                 {% endif %}
                                                 {% endif %}
                                                 {% if recinvoice.adjust != '0.00' %}
-                                                {% if recinvoice.adjust != '0.0' %}
+                                                {% if recinvoice.adjust != 0.0 %}
                                                 {% if recinvoice.adjust != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Adjustment</td>
@@ -1191,7 +1191,7 @@ footer p {
                                                     <td class="text-right" style="color: #000;">{{recinvoice.taxamount}}</td>
                                                 </tr>
                                                 {% if recinvoice.shipping_charge != '0.00' %}
-                                                {% if recinvoice.shipping_charge != '0.0' %}
+                                                {% if recinvoice.shipping_charge != 0.0 %}
                                                 {% if recinvoice.shipping_charge != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Shipping Charge</td>
@@ -1202,7 +1202,7 @@ footer p {
                                                 {% endif %}
                                                 {% endif %}
                                                 {% if recinvoice.adjust != '0.00' %}
-                                                {% if recinvoice.adjust != '0.0' %}
+                                                {% if recinvoice.adjust != 0.0 %}
                                                 {% if recinvoice.adjust != '0' %}
                                                 <tr >
                                                     <td style="color: #000;">Adjustment</td>
@@ -1336,6 +1336,7 @@ footer p {
                                 </div>
 
                                 <div><br>
+                                    {% if dis != 0 %}
                                     <div class="row ml-1">
                                         <div class="col-md-5 text-left" style=" color: black;">
                                             Discount
@@ -1344,6 +1345,7 @@ footer p {
                                             {{ dis }}
                                         </div>
                                     </div>
+                                    {% endif %}
                                     <div class="row ml-1">
                                         <div class="col-md-5 text-left" style=" color: black;">
                                             Subtotal
@@ -1380,7 +1382,7 @@ footer p {
                                     </div>
                                     {% endif %}
                                     {% if recinvoice.shipping_charge != '0.00' %}
-                                    {% if recinvoice.shipping_charge != '0.0' %}
+                                    {% if recinvoice.shipping_charge != 0.0 %}
                                     {% if recinvoice.shipping_charge != '0' %}
                                     <div class="row ml-1">
                                         <div class="col-md-5 text-left" style=" color: black;">
@@ -1394,7 +1396,7 @@ footer p {
                                     {% endif %}
                                     {% endif %}
                                     {% if recinvoice.adjust != '0.00' %}
-                                    {% if recinvoice.adjust != '0.0' %}
+                                    {% if recinvoice.adjust != 0.0 %}
                                     {% if recinvoice.adjust != '0' %}
                                     <div class="row ml-1">
                                         <div class="col-md-5 text-left" style=" color: black;">
